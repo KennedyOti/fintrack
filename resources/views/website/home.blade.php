@@ -60,7 +60,7 @@
             </div>
             <div class="col-lg-6">
                 <div class="hero-image-wrapper">
-                    <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80" 
+                    <img src="{{ asset('assets/images/hero.png') }}" alt="FinTrack Hero" 
                          alt="FinTrack Dashboard - Financial Management" 
                          class="img-fluid hero-main-image">
                     
