@@ -1,0 +1,360 @@
+/* FinTrack Portal Styles */
+
+/* CSS Variables */
+:root {
+    --primary: #1E3A8A;
+    --primary-light: #3B82F6;
+    --primary-dark: #1e40af;
+    --accent: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --info: #3B82F6;
+    --bg-light: #F3F4F6;
+    --bg-dark: #1f2937;
+    --text-dark: #111827;
+    --text-muted: #6B7280;
+    --sidebar-width: 260px;
+    --top-nav-height: 60px;
+}
+
+/* Base */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+}
+
+/* Wrapper */
+.wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s;
+}
+
+.sidebar-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header a {
+    font-size: 1.5rem;
+}
+
+.sidebar-menu {
+    flex: 1;
+    padding: 1rem 0;
+    overflow-y: auto;
+}
+
+.sidebar-menu .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.75rem 1.25rem;
+    border-left: 3px solid transparent;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar-menu .nav-link:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-color: var(--accent);
+}
+
+.sidebar-menu .nav-link.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-left-color: var(--accent);
+}
+
+.sidebar-menu .nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Main Content */
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: margin-left 0.3s;
+}
+
+.top-nav {
+    height: var(--top-nav-height);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.portal-footer {
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Card Styles */
+.card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+}
+
+/* Table Styles */
+.table {
+    font-size: 0.9rem;
+}
+
+/* Remove scrollbar from invoices table */
+.invoices-table .table-responsive {
+    overflow-x: visible;
+}
+
+.invoices-table .table-responsive::-webkit-scrollbar {
+    display: none;
+}
+
+.table thead th {
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
+}
+
+.btn-success {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    border-color: var(--danger);
+}
+
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Badge Styles */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* Form Styles */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    padding: 0.625rem 0.875rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+/* Stats Card */
+.stats-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+}
+
+/* Sidebar Toggle */
+#sidebarToggle {
+    border: none;
+    background: transparent;
+}
+
+#sidebarToggle:hover {
+    background-color: #f3f4f6;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .sidebar {
+        margin-left: -100%;
+    }
+    
+    .sidebar.active {
+        margin-left: 0;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.alert-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--accent);
+}
+
+.alert-danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.alert-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.alert-info {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--info);
+}
+
+/* Dropdown */
+.dropdown-menu {
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f3f4f6;
+}
+
+/* Modal */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+}
+
+.modal-header {
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-footer {
+    border-top: 1px solid #e5e7eb;
+    border-radius: 0 0 12px 12px;
+}
+
+/* Pagination */
+.pagination {
+    margin: 0;
+}
+
+.page-link {
+    border-radius: 6px;
+    margin: 0 2px;
+    color: var(--text-dark);
+}
+
+.page-link:hover {
+    background-color: #f3f4f6;
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
