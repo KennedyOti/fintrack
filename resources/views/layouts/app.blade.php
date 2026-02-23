@@ -174,15 +174,15 @@
                     <h6 class="footer-title">Contact Us</h6>
                     <div class="footer-contact-item">
                         <i class="fas fa-envelope"></i>
-                        <span>support@fintrack.io</span>
+                        <span>support@fintrack.co.ke</span>
                     </div>
                     <div class="footer-contact-item">
                         <i class="fas fa-phone-alt"></i>
-                        <span>+1 (555) 123-4567</span>
+                        <span>+254793543659</span>
                     </div>
                     <div class="footer-contact-item">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span>123 Business Street, Suite 100<br>New York, NY 10001</span>
+                        <span>Nairobi Kenya, Suite 100<br>Nairobi Kenya, NA 10001</span>
                     </div>
                 </div>
             </div>
