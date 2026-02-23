@@ -23,7 +23,7 @@
         <nav id="sidebar" class="sidebar">
             <div class="sidebar-header">
                 <a href="{{ route('dashboard') }}" class="d-flex align-items-center text-white text-decoration-none">
-                    <i class="fas fa-wallet fa-lg me-2"></i>
+                    <!--<i class="fas fa-wallet fa-lg me-2"></i>-->
                     <span class="fw-bold">FinTrack</span>
                 </a>
             </div>

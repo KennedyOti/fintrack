@@ -7,6 +7,7 @@ use App\Models\Income;
 use App\Models\Expense;
 use App\Models\SavingsAccount;
 use App\Models\SavingsTransaction;
+use App\Helpers\CurrencyHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -44,8 +45,11 @@ class SavingsController extends Controller
             ->where('amount', '>', 0)
             ->orderBy('income_date', 'desc')
             ->get();
-            
-        return view('portal.savings.index', compact('accounts', 'search', 'status', 'netIncome', 'availableIncome'));
+        
+        // Get user's currency symbol
+        $currencySymbol = CurrencyHelper::getSymbol();
+        
+        return view('portal.savings.index', compact('accounts', 'search', 'status', 'netIncome', 'availableIncome', 'currencySymbol'));
     }
 
     public function create()
@@ -76,9 +80,10 @@ class SavingsController extends Controller
 
     public function show(SavingsAccount $savings)
     {
-        // Ensure the savings account belongs to the current user
-        if (!$savings || (int) $savings->user_id !== (int) Auth::id()) {
-            abort(403, 'You are not authorized to access this savings account.');
+        // If savings account is null due to route model binding (not found or not owned by user)
+        // This will now return 404 because resolveRouteBinding scopes to current user
+        if (!$savings) {
+            abort(404);
         }
         
         $savings->load(['transactions' => function ($query) {
@@ -97,7 +102,11 @@ class SavingsController extends Controller
             ->orderBy('income_date', 'desc')
             ->get();
         
-        return view('portal.savings.show', compact('savings', 'netIncome', 'availableIncome'));
+        // Get user's currency symbol
+        $currencySymbol = CurrencyHelper::getSymbol();
+        $currencyCode = CurrencyHelper::getUserCurrency();
+        
+        return view('portal.savings.show', compact('savings', 'netIncome', 'availableIncome', 'currencySymbol', 'currencyCode'));
     }
 
     public function edit(SavingsAccount $savings)
@@ -285,8 +294,10 @@ class SavingsController extends Controller
 
     private function authorizeSavings($savings)
     {
-        if (!$savings || (int) $savings->user_id !== (int) Auth::id()) {
-            abort(403, 'You are not authorized to access this savings account.');
+        // If savings is null due to route model binding, abort 404
+        // Otherwise, the route binding already ensures it belongs to the current user
+        if (!$savings) {
+            abort(404);
         }
     }
 }

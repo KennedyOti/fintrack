@@ -28,7 +28,19 @@ class SavingsAccount extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Explicit route model binding
+    // Explicit route model binding - scope to current user
+    public function resolveRouteBinding($value, $field = null)
+    {
+        // If no user is authenticated, return null (will show 404)
+        if (!auth()->check()) {
+            return null;
+        }
+        
+        return $this->where('id', $value)
+            ->where('user_id', auth()->id())
+            ->first();
+    }
+
     public function getRouteKeyName()
     {
         return 'id';

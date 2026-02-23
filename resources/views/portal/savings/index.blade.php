@@ -179,7 +179,7 @@ $availableForSavings = $netIncome - $totalSavings;
                     @foreach($accounts as $account)
                     <tr>
                         <td class="fw-semibold">
-                            <a href="{{ route('savings.show', $account->id) }}" class="text-decoration-none">
+                            <a href="{{ route('savings.show', ['saving' => $account->id]) }}" class="text-decoration-none">
                                 {{ $account->name }}
                             </a>
                         </td>
@@ -210,15 +210,15 @@ $availableForSavings = $netIncome - $totalSavings;
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ route('savings.show', $account->id) }}">
+                                    <li><a class="dropdown-item" href="{{ route('savings.show', ['saving' => $account->id]) }}">
                                         <i class="fas fa-eye me-2"></i>View
                                     </a></li>
-                                    <li><a class="dropdown-item" href="{{ route('savings.edit', $account->id) }}">
+                                    <li><a class="dropdown-item" href="{{ route('savings.edit', ['saving' => $account->id]) }}">
                                         <i class="fas fa-edit me-2"></i>Edit
                                     </a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form action="{{ route('savings.destroy', $account->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('savings.destroy', ['saving' => $account->id]) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="dropdown-item text-danger" 

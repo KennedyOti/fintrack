@@ -10,7 +10,7 @@
         <p class="text-muted mb-0">Savings Account Details</p>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ route('savings.edit', $savings->id) }}" class="btn btn-outline-primary">
+        <a href="{{ route('savings.edit', ['savings' => $savings->id]) }}" class="btn btn-outline-primary">
             <i class="fas fa-edit me-1"></i> Edit
         </a>
         <a href="{{ route('savings.index') }}" class="btn btn-outline-secondary">
@@ -27,7 +27,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-0">Current Balance</p>
-                        <h3 class="mb-0 text-success">${{ number_format($savings->current_balance, 2) }}</h3>
+                        <h3 class="mb-0 text-success">{{ $currencySymbol }}{{ number_format($savings->current_balance, 2) }}</h3>
                     </div>
                     <div class="text-success">
                         <i class="fas fa-wallet fa-2x"></i>
@@ -42,7 +42,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-0">Target Amount</p>
-                        <h3 class="mb-0">{{ $savings->target_amount ? '$' . number_format($savings->target_amount, 2) : '-' }}</h3>
+                        <h3 class="mb-0">{{ $savings->target_amount ? $currencySymbol . number_format($savings->target_amount, 2) : '-' }}</h3>
                     </div>
                     <div class="text-info">
                         <i class="fas fa-bullseye fa-2x"></i>
@@ -59,7 +59,7 @@
                         <p class="text-muted mb-0">Remaining to Goal</p>
                         <h3 class="mb-0">
                             @if($savings->target_amount)
-                                ${{ number_format(max(0, $savings->target_amount - $savings->current_balance), 2) }}
+                                {{ $currencySymbol }}{{ number_format(max(0, $savings->target_amount - $savings->current_balance), 2) }}
                             @else
                                 -
                             @endif
@@ -135,7 +135,7 @@
                         <h5 class="mb-0 text-success"><i class="fas fa-plus-circle me-1"></i> Deposit (From Income)</h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="{{ route('savings.deposit', $savings->id) }}">
+                        <form method="POST" action="{{ route('savings.deposit', ['savings' => $savings->id]) }}">
                             @csrf
                             <div class="mb-2">
                                 <label for="deposit_income" class="form-label">Select Income Source</label>
@@ -151,8 +151,8 @@
                                         @endphp
                                         @if($availableFromThis > 0)
                                             <option value="{{ $income->id }}">
-                                                {{ $income->category->name ?? 'Uncategorized' }} - ${{ number_format($income->amount, 2) }} ({{ $income->income_date->format('M d') }})
-                                                [Available: ${{ number_format($availableFromThis, 2) }}]
+                                                {{ $income->category->name ?? 'Uncategorized' }} - {{ $currencySymbol }}{{ number_format($income->amount, 2) }} ({{ $income->income_date->format('M d') }})
+                                                [Available: {{ $currencySymbol }}{{ number_format($availableFromThis, 2) }}]
                                             </option>
                                         @endif
                                     @empty
@@ -164,7 +164,7 @@
                             <div class="mb-2">
                                 <label for="deposit_amount" class="form-label">Amount</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text">{{ $currencySymbol }}</span>
                                     <input type="number" name="amount" id="deposit_amount" 
                                            class="form-control" min="0.01" step="0.01" required>
                                 </div>
@@ -194,17 +194,17 @@
                         <h5 class="mb-0 text-danger"><i class="fas fa-minus-circle me-1"></i> Withdraw</h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="{{ route('savings.withdraw', $savings->id) }}">
+                        <form method="POST" action="{{ route('savings.withdraw', ['savings' => $savings->id]) }}">
                             @csrf
                             <div class="mb-2">
                                 <label for="withdraw_amount" class="form-label">Amount</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text">{{ $currencySymbol }}</span>
                                     <input type="number" name="amount" id="withdraw_amount" 
                                            class="form-control" min="0.01" step="0.01" 
                                            max="{{ $savings->current_balance }}" required>
                                 </div>
-                                <div class="form-text">Available: ${{ number_format($savings->current_balance, 2) }}</div>
+                                <div class="form-text">Available: {{ $currencySymbol }}{{ number_format($savings->current_balance, 2) }}</div>
                             </div>
                             <div class="mb-2">
                                 <label for="withdraw_date" class="form-label">Date</label>
@@ -256,7 +256,7 @@
                                     </span>
                                 </td>
                                 <td class="fw-semibold {{ $transaction->type == 'deposit' ? 'text-success' : 'text-danger' }}">
-                                    {{ $transaction->type == 'deposit' ? '+' : '-' }}${{ number_format($transaction->amount, 2) }}
+                                    {{ $transaction->type == 'deposit' ? '+' : '-' }}{{ $currencySymbol }}{{ number_format($transaction->amount, 2) }}
                                 </td>
                                 <td>
                                     @if($transaction->income)

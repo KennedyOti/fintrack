@@ -9,7 +9,7 @@
         <h4 class="mb-0">Edit Savings Account</h4>
         <p class="text-muted mb-0">Update your savings account details</p>
     </div>
-    <a href="{{ route('savings.show', $savings->id) }}" class="btn btn-outline-secondary">
+    <a href="{{ route('savings.show', ['saving' => $savings->id]) }}" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left me-1"></i> Back to Account
     </a>
 </div>
@@ -18,7 +18,7 @@
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
-                <form method="POST" action="{{ route('savings.update', $savings->id) }}">
+                <form method="POST" action="{{ route('savings.update', ['saving' => $savings->id]) }}">
                     @csrf
                     @method('PUT')
                     
@@ -84,7 +84,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-1"></i> Update Savings Account
                         </button>
-                        <a href="{{ route('savings.show', $savings->id) }}" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="{{ route('savings.show', ['saving' => $savings->id]) }}" class="btn btn-outline-secondary">Cancel</a>
                     </div>
                 </form>
             </div>
@@ -119,7 +119,7 @@
             </div>
             <div class="card-body">
                 <p class="text-muted small mb-3">Once you delete a savings account, there is no going back. Please be certain.</p>
-                <form action="{{ route('savings.destroy', $savings->id) }}" method="POST" class="d-inline">
+                <form action="{{ route('savings.destroy', ['saving' => $savings->id]) }}" method="POST" class="d-inline">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger w-100" 

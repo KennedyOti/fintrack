@@ -1,72 +1,196 @@
 @extends('layouts.app')
 
-@section('title', 'FinTrack - Professional Financial Management')
+@section('title', 'FinTrack - Financial Management for Freelancers')
 
 @section('content')
 <!-- Hero Section -->
 <section class="hero-section">
     <div class="container">
-        <div class="row align-items-center min-vh-75">
+        <div class="row align-items-center">
             <div class="col-lg-6">
-                <span class="badge bg-primary-subtle text-primary mb-3 px-4 py-2 rounded-pill">
-                    <i class="fas fa-rocket me-1"></i> Launch Your Financial Success
-                </span>
-                <h1 class="display-3 fw-bold mb-4">
-                    Master Your <span class="text-primary">Finances</span> & Projects
-                </h1>
-                <p class="lead text-muted mb-4">
-                    FinTrack helps freelancers and small agencies track income, expenses, projects, 
-                    invoices, and more - all in one powerful dashboard.
-                </p>
-                <div class="d-flex gap-3 flex-wrap">
-                    @auth
-                    <a href="{{ route('dashboard') }}" class="btn btn-primary btn-lg px-5 shadow-sm">
-                        <i class="fas fa-tachometer-alt me-2"></i> Go to Dashboard
-                    </a>
-                    @else
-                    <a href="{{ route('register') }}" class="btn btn-primary btn-lg px-5 shadow-sm">
-                        <i class="fas fa-user-plus me-2"></i> Get Started Free
-                    </a>
-                    <a href="{{ route('login') }}" class="btn btn-outline-primary btn-lg px-5">
-                        <i class="fas fa-sign-in-alt me-2"></i> Login
-                    </a>
-                    @endauth
-                </div>
-                <div class="mt-5">
-                    <p class="text-muted mb-2">Trusted by freelancers worldwide</p>
-                    <div class="d-flex gap-3">
-                        <span class="text-warning"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></span>
-                        <span class="text-muted">4.9/5 rating</span>
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="badge-dot"></span>
+                        <span>100% Free for Freelancers</span>
+                    </div>
+                    <h1 class="hero-title">
+                        Stop Worrying About <span class="highlight">Irregular Income</span><br>
+                        Start <span class="highlight-green">Mastering Your Finances</span>
+                    </h1>
+                    <p class="hero-description">
+                        As a freelancer, you know the struggle of unpredictable income. 
+                        FinTrack helps you track every shilling, plan your expenses, 
+                        and build financial security — no accounting degree required.
+                    </p>
+                    <div class="hero-buttons">
+                        @auth
+                        <a href="{{ route('dashboard') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-th-large"></i> Go to Dashboard
+                        </a>
+                        @else
+                        <a href="{{ route('register') }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-rocket"></i> Start Free Forever
+                        </a>
+                        <a href="{{ route('login') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                        @endauth
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stat-item">
+                            <div class="hero-stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="hero-stat-content">
+                                <span class="hero-stat-value">10,000+</span>
+                                <span class="hero-stat-label">Freelancers</span>
+                            </div>
+                        </div>
+                        <div class="hero-stat-item">
+                            <div class="hero-stat-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="hero-stat-content">
+                                <span class="hero-stat-value">4.9/5</span>
+                                <span class="hero-stat-label">User Rating</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="hero-image-container">
+                <div class="hero-image-wrapper">
                     <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80" 
-                         alt="Financial Dashboard" 
-                         class="img-fluid rounded-4 shadow-lg">
-                    <div class="floating-card card-1">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-success-subtle rounded-circle p-2 me-2">
-                                <i class="fas fa-arrow-up text-success"></i>
+                         alt="FinTrack Dashboard - Financial Management" 
+                         class="img-fluid hero-main-image">
+                    
+                    <!-- Floating Cards -->
+                    <div class="floating-card floating-card-income">
+                        <div class="floating-card-content">
+                            <div class="floating-card-icon income">
+                                <i class="fas fa-arrow-trend-up"></i>
                             </div>
-                            <div>
-                                <small class="text-muted">Income</small>
-                                <div class="fw-bold text-success">+KES 125,000</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="floating-card card-2">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-primary-subtle rounded-circle p-2 me-2">
-                                <i class="fas fa-chart-line text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Profit</small>
-                                <div class="fw-bold text-primary">+45%</div>
+                            <div class="floating-card-text">
+                                <small>Monthly Income</small>
+                                <strong class="positive">+KES 125,000</strong>
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="floating-card floating-card-savings">
+                        <div class="floating-card-content">
+                            <div class="floating-card-icon savings">
+                                <i class="fas fa-piggy-bank"></i>
+                            </div>
+                            <div class="floating-card-text">
+                                <small>Savings Goal</small>
+                                <strong class="positive">65% Complete</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="floating-card floating-card-invoice">
+                        <div class="floating-card-content">
+                            <div class="floating-card-icon invoice">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <div class="floating-card-text">
+                                <small>Pending Invoices</small>
+                                <strong>3 Active</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Problem & Solution Section -->
+<section class="problem-solution-section" id="features">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-lg-8">
+                <span class="section-badge">
+                    <i class="fas fa-lightbulb"></i>
+                    Why FinTrack?
+                </span>
+                <h2 class="section-title">Freelancers Face Real Financial Challenges</h2>
+                <p class="section-description">
+                    We understand the unique struggles of irregular income. Here's how FinTrack transforms your financial journey.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Problems -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-12">
+                <h3 class="mb-4 fw-bold" style="color: var(--ft-text-dark);">
+                    <span style="color: #EF4444;">❌</span> The Problem
+                </h3>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <h4>Irregular Income</h4>
+                    <p>No guaranteed monthly salary means you never know how much you'll earn next month, making budgeting impossible.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h4>Lost Track of Expenses</h4>
+                    <p>Business expenses get mixed with personal spending, making it hard to know what you can deduct come tax time.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <h4>Chasing Payments</h4>
+                    <p>Forgetting to send invoices, losing track of who owes you money, and wasting time following up with clients.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Solutions -->
+        <div class="row g-4">
+            <div class="col-lg-12">
+                <h3 class="mb-4 fw-bold" style="color: var(--ft-text-dark);">
+                    <span style="color: var(--ft-emerald);">✓</span> The FinTrack Solution
+                </h3>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Smart Income Tracking</h4>
+                    <p>Track every payment from every client. See your income patterns and plan for lean months with confidence.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h4>Complete Expense Management</h4>
+                    <p>Categorize and track all business expenses. Know exactly where your money goes and maximize deductions.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4>Automated Invoicing</h4>
+                    <p>Create professional invoices in seconds, send reminders automatically, and get paid faster without the hassle.</p>
                 </div>
             </div>
         </div>
@@ -74,175 +198,350 @@
 </section>
 
 <!-- Features Section -->
-<section id="features" class="py-5">
+<section class="features-section">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold">Everything You Need to Manage Your Business</h2>
-            <p class="text-muted lead">Powerful features designed specifically for freelancers and small agencies</p>
+        <!-- Section Header -->
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-lg-8">
+                <span class="section-badge">
+                    <i class="fas fa-tools"></i>
+                    Powerful Features
+                </span>
+                <h2 class="section-title">Everything You Need to Run Your Freelance Business</h2>
+                <p class="section-description">
+                    From tracking income to generating invoices, FinTrack gives you all the tools to manage your business finances.
+                </p>
+            </div>
         </div>
+        
+        <!-- Features Grid -->
         <div class="row g-4">
+            <!-- Income Tracking -->
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm feature-card">
-                    <div class="card-body p-4">
-                        <div class="feature-icon bg-primary-subtle text-primary rounded-3 mb-3">
-                            <i class="fas fa-money-bill-wave fa-lg"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Income Tracking</h5>
-                        <p class="card-text text-muted">Track all your income sources, link payments to clients and projects, and get detailed reports.</p>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper income">
+                        <i class="fas fa-money-bill-wave"></i>
                     </div>
+                    <h4>Income Tracking</h4>
+                    <p>Track all your income sources, link payments to clients and projects, and get detailed reports on your earnings.</p>
                 </div>
             </div>
+            
+            <!-- Expense Management -->
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm feature-card">
-                    <div class="card-body p-4">
-                        <div class="feature-icon bg-danger-subtle text-danger rounded-3 mb-3">
-                            <i class="fas fa-receipt fa-lg"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Expense Management</h5>
-                        <p class="card-text text-muted">Record expenses by category, track vendor payments, and monitor your spending patterns.</p>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper expense">
+                        <i class="fas fa-receipt"></i>
                     </div>
+                    <h4>Expense Management</h4>
+                    <p>Record expenses by category, track vendor payments, and monitor your spending patterns to save money.</p>
                 </div>
             </div>
+            
+            <!-- Savings Goals -->
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm feature-card">
-                    <div class="card-body p-4">
-                        <div class="feature-icon bg-success-subtle text-success rounded-3 mb-3">
-                            <i class="fas fa-piggy-bank fa-lg"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Savings Goals</h5>
-                        <p class="card-text text-muted">Create savings accounts for different goals, track progress, and grow your emergency fund.</p>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper savings">
+                        <i class="fas fa-piggy-bank"></i>
                     </div>
+                    <h4>Savings Goals</h4>
+                    <p>Create savings accounts for different goals - emergency fund, equipment, vacation. Track progress visually.</p>
                 </div>
             </div>
+            
+            <!-- Invoice Generation -->
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm feature-card">
-                    <div class="card-body p-4">
-                        <div class="feature-icon bg-warning-subtle text-warning rounded-3 mb-3">
-                            <i class="fas fa-file-invoice-dollar fa-lg"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Invoicing</h5>
-                        <p class="card-text text-muted">Create professional invoices, track payment status, and send reminders automatically.</p>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper invoice">
+                        <i class="fas fa-file-invoice-dollar"></i>
                     </div>
+                    <h4>Invoice Generator</h4>
+                    <p>Create beautiful, professional invoices in minutes. Send them directly to clients and track payment status.</p>
                 </div>
             </div>
+            
+            <!-- Quote Generation -->
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm feature-card">
-                    <div class="card-body p-4">
-                        <div class="feature-icon bg-info-subtle text-info rounded-3 mb-3">
-                            <i class="fas fa-project-diagram fa-lg"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Project Management</h5>
-                        <p class="card-text text-muted">Track projects, milestones, budgets, and profitability all in one place.</p>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper project">
+                        <i class="fas fa-file-contract"></i>
                     </div>
+                    <h4>Quote Generator</h4>
+                    <p>Create compelling quotes for potential clients. Convert quotes to invoices with one click when accepted.</p>
                 </div>
             </div>
+            
+            <!-- Client Management -->
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm feature-card">
-                    <div class="card-body p-4">
-                        <div class="feature-icon bg-secondary-subtle text-secondary rounded-3 mb-3">
-                            <i class="fas fa-chart-pie fa-lg"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Financial Reports</h5>
-                        <p class="card-text text-muted">Get real-time insights with profit/loss statements, cash flow, and tax reports.</p>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper income">
+                        <i class="fas fa-users"></i>
                     </div>
+                    <h4>Client Management</h4>
+                    <p>Keep all client information in one place. Track projects, payment history, and communicate effectively.</p>
+                </div>
+            </div>
+            
+            <!-- Project Tracking -->
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper project">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h4>Project Tracking</h4>
+                    <p>Track projects, milestones, budgets, and profitability. Know which projects are making you money.</p>
+                </div>
+            </div>
+            
+            <!-- Debt Tracking -->
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper expense">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <h4>Debt Management</h4>
+                    <p>Track money owed to you (receivables) and money you owe (payables). Never miss a payment again.</p>
+                </div>
+            </div>
+            
+            <!-- Financial Reports -->
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper savings">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h4>Financial Reports</h4>
+                    <p>Get real-time insights with profit/loss statements, cash flow reports, and tax-ready financial summaries.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Benefits Section -->
-<section class="py-5 bg-light">
+<!-- How It Works Section -->
+<section class="how-it-works-section" id="how-it-works">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80" 
-                     alt="Analytics" 
-                     class="img-fluid rounded-4 shadow">
+        <!-- Section Header -->
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-lg-8">
+                <span class="section-badge">
+                    <i class="fas fa-route"></i>
+                    Simple Process
+                </span>
+                <h2 class="section-title">How FinTrack Works</h2>
+                <p class="section-description">
+                    Get started in minutes. No accounting knowledge required.
+                </p>
             </div>
-            <div class="col-lg-6">
-                <h2 class="fw-bold mb-4">Why Choose FinTrack?</h2>
-                <div class="d-flex gap-3 mb-4">
-                    <div class="flex-shrink-0">
-                        <div class="bg-primary rounded-circle p-2" style="width: 40px; height: 40px;">
-                            <i class="fas fa-check text-white"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <h5 class="fw-bold">Real-Time Financial Position</h5>
-                        <p class="text-muted mb-0">See your net worth at a glance with our comprehensive financial dashboard.</p>
-                    </div>
+        </div>
+        
+        <!-- Steps -->
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-connector"></div>
+                    <h4>Create Your Account</h4>
+                    <p>Sign up for free in seconds. Add your business details and you're ready to start tracking.</p>
                 </div>
-                <div class="d-flex gap-3 mb-4">
-                    <div class="flex-shrink-0">
-                        <div class="bg-primary rounded-circle p-2" style="width: 40px; height: 40px;">
-                            <i class="fas fa-check text-white"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <h5 class="fw-bold">Debt & Receivables Tracking</h5>
-                        <p class="text-muted mb-0">Never miss a payment with automatic overdue alerts and aging reports.</p>
-                    </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-connector"></div>
+                    <h4>Add Your Income & Expenses</h4>
+                    <p>Record your payments, track expenses, and organize them by category for clarity.</p>
                 </div>
-                <div class="d-flex gap-3">
-                    <div class="flex-shrink-0">
-                        <div class="bg-primary rounded-circle p-2" style="width: 40px; height: 40px;">
-                            <i class="fas fa-check text-white"></i>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h4>Generate Invoices & Quotes</h4>
+                    <p>Create professional invoices and quotes. Send to clients and get paid faster.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA Box -->
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-10">
+                <div class="cta-box">
+                    <div class="cta-content">
+                        <h2>Ready to Take Control of Your Finances?</h2>
+                        <p>Join thousands of freelancers who use FinTrack to manage their business finances effectively.</p>
+                        <div class="cta-buttons">
+                            @auth
+                            <a href="{{ route('dashboard') }}" class="btn btn-light btn-lg">
+                                <i class="fas fa-th-large"></i> Go to Dashboard
+                            </a>
+                            @else
+                            <a href="{{ route('register') }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-rocket"></i> Start Free Forever
+                            </a>
+                            <a href="#features" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-star"></i> Learn More
+                            </a>
+                            @endauth
                         </div>
-                    </div>
-                    <div>
-                        <h5 class="fw-bold">Client Management</h5>
-                        <p class="text-muted mb-0">Track client details, project history, and outstanding balances.</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- CTA Section -->
-<section class="py-5 bg-primary">
-    <div class="container text-center">
-        <h2 class="fw-bold text-white mb-3">Ready to Take Control of Your Finances?</h2>
-        <p class="text-white-50 mb-4">Join thousands of freelancers who trust FinTrack to manage their business</p>
-        @auth
-        <a href="{{ route('dashboard') }}" class="btn btn-light btn-lg px-5">
-            <i class="fas fa-tachometer-alt me-2"></i> Go to Dashboard
-        </a>
-        @else
-        <a href="{{ route('register') }}" class="btn btn-light btn-lg px-5">
-            <i class="fas fa-user-plus me-2"></i> Start Free Trial
-        </a>
-        @endauth
     </div>
 </section>
 
 <!-- Stats Section -->
-<section class="py-5">
+<section class="stats-section">
     <div class="container">
-        <div class="row text-center g-4">
+        <div class="row g-4">
             <div class="col-6 col-md-3">
                 <div class="stat-item">
-                    <h3 class="fw-bold text-primary">10K+</h3>
-                    <p class="text-muted mb-0">Active Users</p>
+                    <div class="stat-value">10K+</div>
+                    <div class="stat-label">Active Users</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-item">
-                    <h3 class="fw-bold text-primary">$50M+</h3>
-                    <p class="text-muted mb-0">Invoices Created</p>
+                    <div class="stat-value">KES 500M+</div>
+                    <div class="stat-label">Income Tracked</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-item">
-                    <h3 class="fw-bold text-primary">99.9%</h3>
-                    <p class="text-muted mb-0">Uptime</p>
+                    <div class="stat-value">50K+</div>
+                    <div class="stat-label">Invoices Created</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-item">
-                    <h3 class="fw-bold text-primary">24/7</h3>
-                    <p class="text-muted mb-0">Support</p>
+                    <div class="stat-value">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section" id="testimonials">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-lg-8">
+                <span class="section-badge" style="background: rgba(255,255,255,0.15); color: var(--ft-cyan);">
+                    <i class="fas fa-heart"></i>
+                    Loved by Freelancers
+                </span>
+                <h2 class="section-title" style="color: var(--ft-white);">What Our Users Say</h2>
+                <p class="section-description" style="color: rgba(255,255,255,0.8);">
+                    Join thousands of freelancers who have transformed their financial management.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Testimonials -->
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="testimonial-card">
+                            <div class="testimonial-header">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80&fit=crop&crop=faces" 
+                                     alt="John M." class="testimonial-avatar">
+                                <div class="testimonial-info">
+                                    <h5>John M.</h5>
+                                    <span>Web Developer</span>
+                                </div>
+                            </div>
+                            <div class="testimonial-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="testimonial-text">
+                                "FinTrack changed how I manage my freelance income. I finally know where my money goes and have saved enough for a 3-month emergency fund!"
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="testimonial-card">
+                            <div class="testimonial-header">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80&fit=crop&crop=faces" 
+                                     alt="Sarah K." class="testimonial-avatar">
+                                <div class="testimonial-info">
+                                    <h5>Sarah K.</h5>
+                                    <span>Graphic Designer</span>
+                                </div>
+                            </div>
+                            <div class="testimonial-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="testimonial-text">
+                                "The invoice generator alone is worth it. I create professional invoices in minutes and get paid twice as fast. Best tool for freelancers!"
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="testimonial-card">
+                            <div class="testimonial-header">
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80&fit=crop&crop=faces" 
+                                     alt="David O." class="testimonial-avatar">
+                                <div class="testimonial-info">
+                                    <h5>David O.</h5>
+                                    <span>Consultant</span>
+                                </div>
+                            </div>
+                            <div class="testimonial-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="testimonial-text">
+                                "As someone with irregular income, FinTrack helps me plan for lean months. The savings goals feature helped me buy my first car!"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-8">
+                <div class="cta-box">
+                    <div class="cta-content">
+                        <h2>Start Managing Your Freelance Finances Today</h2>
+                        <p>It's 100% free. No credit card required. No hidden fees. Forever.</p>
+                        <div class="cta-buttons">
+                            @auth
+                            <a href="{{ route('dashboard') }}" class="btn btn-light btn-lg">
+                                <i class="fas fa-th-large"></i> Go to Dashboard
+                            </a>
+                            @else
+                            <a href="{{ route('register') }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-user-plus"></i> Create Free Account
+                            </a>
+                            <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                            @endauth
+                        </div>
+                        <p style="margin-top: 20px; font-size: 14px; color: rgba(255,255,255,0.7);">
+                            <i class="fas fa-shield-alt"></i> Your data is secure and private
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -252,50 +551,35 @@
 
 @section('styles')
 <style>
-    .min-vh-75 {
-        min-height: 75vh;
+    /* Additional page-specific styles */
+    .problem-card,
+    .solution-card,
+    .feature-card,
+    .step-card {
+        opacity: 0;
+        animation: fadeInUp 0.6s ease forwards;
     }
-    .hero-section {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        padding: 60px 0;
-    }
-    .hero-image-container {
-        position: relative;
-    }
-    .floating-card {
-        position: absolute;
-        background: white;
-        padding: 12px 16px;
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    }
-    .card-1 {
-        top: 20%;
-        left: -20px;
-        animation: float 3s ease-in-out infinite;
-    }
-    .card-2 {
-        bottom: 20%;
-        right: -20px;
-        animation: float 3s ease-in-out infinite 1.5s;
-    }
-    @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
-    .feature-icon {
-        width: 56px;
-        height: 56px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .feature-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
-    }
+    
+    .problem-card:nth-child(1),
+    .solution-card:nth-child(1),
+    .feature-card:nth-child(1),
+    .step-card:nth-child(1) { animation-delay: 0.1s; }
+    
+    .problem-card:nth-child(2),
+    .solution-card:nth-child(2),
+    .feature-card:nth-child(2),
+    .step-card:nth-child(2) { animation-delay: 0.2s; }
+    
+    .problem-card:nth-child(3),
+    .solution-card:nth-child(3),
+    .feature-card:nth-child(3),
+    .step-card:nth-child(3) { animation-delay: 0.3s; }
+    
+    .feature-card:nth-child(4) { animation-delay: 0.4s; }
+    .feature-card:nth-child(5) { animation-delay: 0.5s; }
+    .feature-card:nth-child(6) { animation-delay: 0.6s; }
+    .feature-card:nth-child(7) { animation-delay: 0.7s; }
+    .feature-card:nth-child(8) { animation-delay: 0.8s; }
+    .feature-card:nth-child(9) { animation-delay: 0.9s; }
 </style>
 @endsection

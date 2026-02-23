@@ -3,124 +3,111 @@
 @section('title', 'Login - FinTrack')
 
 @section('content')
-<div class="auth-page">
-    <div class="container">
-        <div class="row justify-content-center align-items-center min-vh-100">
-            <div class="col-md-6 col-lg-5">
-                <div class="auth-card card border-0 shadow-lg">
-                    <div class="card-body p-5">
-                        <div class="text-center mb-4">
-                            <a href="{{ route('home') }}" class="d-flex align-items-center justify-content-center text-decoration-none mb-4">
-                                <i class="fas fa-wallet fa-2x text-primary me-2"></i>
-                                <span class="h3 mb-0 text-dark">FinTrack</span>
-                            </a>
-                            <h4 class="mb-1">Welcome Back</h4>
-                            <p class="text-muted">Sign in to your account</p>
-                        </div>
-
-                        <form method="POST" action="{{ route('login') }}">
-                            @csrf
-                            
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email Address</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0">
-                                        <i class="fas fa-envelope text-muted"></i>
-                                    </span>
-                                    <input type="email" 
-                                           class="form-control border-start-0 @error('email') is-invalid @enderror" 
-                                           id="email" 
-                                           name="email" 
-                                           value="{{ old('email') }}" 
-                                           placeholder="Enter your email"
-                                           required 
-                                           autofocus>
-                                    @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0">
-                                        <i class="fas fa-lock text-muted"></i>
-                                    </span>
-                                    <input type="password" 
-                                           class="form-control border-start-0 @error('password') is-invalid @enderror" 
-                                           id="password" 
-                                           name="password" 
-                                           placeholder="Enter your password"
-                                           required>
-                                    @error('password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                                    <label class="form-check-label text-muted" for="remember">
-                                        Remember me
-                                    </label>
-                                </div>
-                                @if (Route::has('password.request'))
-                                <a href="{{ route('password.request') }}" class="text-decoration-none">
-                                    Forgot password?
-                                </a>
-                                @endif
-                            </div>
-
-                            <button type="submit" class="btn btn-primary w-100 py-2 mb-4">
-                                <i class="fas fa-sign-in-alt me-2"></i> Sign In
-                            </button>
-
-                            <div class="text-center">
-                                <p class="text-muted mb-0">Don't have an account?</p>
-                                @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="text-decoration-none fw-bold">
-                                    Create Account
-                                </a>
-                                @endif
-                            </div>
-                        </form>
+<div class="auth-page auth-page-only">
+    <div class="auth-card">
+        <div class="auth-card-header">
+            <div class="brand">
+                <img src="{{ asset('assets/images/logo.png') }}" alt="FinTrack">
+            </div>
+            <h4>Welcome Back</h4>
+            <p>Sign in to your account</p>
+        </div>
+        
+        <div class="auth-card-body">
+            <form method="POST" action="{{ route('login') }}" class="auth-form">
+                @csrf
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-icon-wrapper">
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <input type="email" 
+                               class="form-control @error('email') is-invalid @enderror" 
+                               id="email" 
+                               name="email" 
+                               value="{{ old('email') }}" 
+                               placeholder="you@example.com"
+                               required 
+                               autofocus>
                     </div>
+                    @error('email')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-icon-wrapper">
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <input type="password" 
+                               class="form-control @error('password') is-invalid @enderror" 
+                               id="password" 
+                               name="password" 
+                               placeholder="••••••••"
+                               required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    @error('password')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="auth-options">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="remember">Remember me</label>
+                    </div>
+                    @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}" class="forgot-link">Forgot password?</a>
+                    @endif
+                </div>
+
+                <button type="submit" class="btn auth-btn auth-btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+
+            <!-- Social Login Divider -->
+            <div class="social-divider">
+                <span>or continue with</span>
+            </div>
+
+            <!-- Google Login Button -->
+            <a href="{{ route('google.redirect') }}" class="btn google-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20">
+                    <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                    <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                    <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                    <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.001-0.001,0.001-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                </svg>
+                Continue with Google
+            </a>
+
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="{{ route('register') }}">Create one</a></p>
             </div>
         </div>
     </div>
 </div>
 @endsection
 
-@section('styles')
-<style>
-    .auth-page {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        min-height: 100vh;
+@push('scripts')
+<script>
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = input.nextElementSibling.querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
     }
-    .auth-card {
-        border-radius: 16px;
-    }
-    .input-group-text {
-        border-radius: 8px 0 0 8px;
-    }
-    .form-control {
-        border-radius: 0 8px 8px 0;
-    }
-    .form-control:focus {
-        border-color: #1E3A8A;
-        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
-    }
-    .btn-primary {
-        background-color: #1E3A8A;
-        border-color: #1E3A8A;
-        font-weight: 600;
-    }
-    .btn-primary:hover {
-        background-color: #3B82F6;
-        border-color: #3B82F6;
-    }
-</style>
-@endsection
+</script>
+@endpush
