@@ -27,6 +27,7 @@ class Invoice extends Model
         'paid_amount',
         'status',
         'notes',
+        'share_token',
     ];
 
     protected $casts = [
@@ -110,5 +111,13 @@ class Invoice extends Model
     public function isOverdue()
     {
         return $this->due_date->isPast() && $this->status !== 'paid';
+    }
+
+    public function getShareUrl(): ?string
+    {
+        if (!$this->share_token) {
+            return null;
+        }
+        return url('/view/invoice/' . $this->share_token);
     }
 }

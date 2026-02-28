@@ -15,6 +15,7 @@ use App\Http\Controllers\Portal\DebtController;
 use App\Http\Controllers\Portal\FinanceController;
 use App\Http\Controllers\Portal\SettingsController;
 use App\Http\Controllers\Portal\NotificationController;
+use App\Http\Controllers\Portal\ClientViewController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,16 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('website.home');
 })->name('home');
+
+// ── Shareable Client Links (no auth required) ──────────────────────────────
+Route::prefix('view')->name('public.')->group(function () {
+    Route::get('/invoice/{token}',     [ClientViewController::class, 'viewInvoice'])->name('invoice');
+    Route::get('/invoice/{token}/pdf', [ClientViewController::class, 'downloadInvoicePdf'])->name('invoice.pdf');
+    Route::get('/quote/{token}',       [ClientViewController::class, 'viewQuote'])->name('quote');
+    Route::get('/quote/{token}/pdf',   [ClientViewController::class, 'downloadQuotePdf'])->name('quote.pdf');
+    Route::post('/quote/{token}/accept', [ClientViewController::class, 'acceptQuote'])->name('quote.accept');
+    Route::post('/quote/{token}/reject', [ClientViewController::class, 'rejectQuote'])->name('quote.reject');
+});
 
 // Authenticated routes
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -44,6 +55,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Expenses
     Route::resource('expenses', ExpenseController::class);
+    Route::get('/expenses/{expense}/receipt', [ExpenseController::class, 'receiptView'])->name('expenses.receipt.view');
+    Route::delete('/expenses/{expense}/receipt', [ExpenseController::class, 'receiptDelete'])->name('expenses.receipt.delete');
     
     // Expense Categories
     Route::get('/expense/categories', [ExpenseCategoryController::class, 'index'])->name('expense.categories.index');
@@ -61,12 +74,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
     Route::post('invoices/{invoice}/payment', [InvoiceController::class, 'recordPayment'])->name('invoices.payment.store');
     Route::delete('invoices/{invoice}/payment/{payment}', [InvoiceController::class, 'destroyPayment'])->name('invoices.payment.destroy');
-    
+    Route::post('invoices/{invoice}/share', [InvoiceController::class, 'generateShareLink'])->name('invoices.share');
+    Route::delete('invoices/{invoice}/share', [InvoiceController::class, 'revokeShareLink'])->name('invoices.share.revoke');
+
     // Quotes
     Route::resource('quotes', QuoteController::class);
     Route::get('quotes/{quote}/pdf', [QuoteController::class, 'downloadPdf'])->name('quotes.pdf');
     Route::patch('quotes/{quote}/status', [QuoteController::class, 'updateStatus'])->name('quotes.status');
     Route::get('quotes/{quote}/convert', [QuoteController::class, 'convertToInvoice'])->name('quotes.convert');
+    Route::post('quotes/{quote}/share', [QuoteController::class, 'generateShareLink'])->name('quotes.share');
+    Route::delete('quotes/{quote}/share', [QuoteController::class, 'revokeShareLink'])->name('quotes.share.revoke');
     
     // Savings
     Route::resource('savings', SavingsController::class);

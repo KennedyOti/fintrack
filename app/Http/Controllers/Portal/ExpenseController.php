@@ -10,6 +10,7 @@ use App\Models\Income;
 use App\Helpers\CurrencyHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ExpenseController extends Controller
 {
@@ -21,7 +22,7 @@ class ExpenseController extends Controller
         $income_id = $request->get('income_id');
         $date_from = $request->get('date_from');
         $date_to = $request->get('date_to');
-        
+
         $expenses = Expense::where('user_id', $user->id)
             ->with(['project', 'income', 'category'])
             ->when($search, function ($query) use ($search) {
@@ -43,7 +44,7 @@ class ExpenseController extends Controller
             })
             ->latest()
             ->paginate(10);
-            
+
         $categories = Category::where('user_id', $user->id)
             ->where('type', 'expense')
             ->orderBy('name')
@@ -96,12 +97,12 @@ class ExpenseController extends Controller
     public function create()
     {
         $user = Auth::user();
-        
+
         $categories = Category::where('user_id', $user->id)
             ->where('type', 'expense')
             ->orderBy('name')
             ->get();
-            
+
         // Get all incomes with their spent amounts - only unspent incomes
         $incomes = Income::where('user_id', $user->id)
             ->withSum('expenses', 'amount')
@@ -110,27 +111,34 @@ class ExpenseController extends Controller
                 // Only include incomes that have not been fully spent
                 return $income->amount > ($income->expenses_sum_amount ?? 0);
             });
-            
+
         return view('portal.expenses.create', compact('categories', 'incomes'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'income_id' => 'nullable|exists:incomes,id',
-            'category_id' => 'nullable|exists:categories,id',
-            'vendor_name' => 'nullable|string|max:150',
-            'amount' => 'required|numeric|min:0',
-            'expense_date' => 'required|date',
-            'payment_method' => 'required|in:cash,bank_transfer,mpesa,card,other',
+            'income_id'        => 'nullable|exists:incomes,id',
+            'category_id'      => 'nullable|exists:categories,id',
+            'vendor_name'      => 'nullable|string|max:150',
+            'amount'           => 'required|numeric|min:0',
+            'expense_date'     => 'required|date',
+            'payment_method'   => 'required|in:cash,bank_transfer,mpesa,card,other',
             'reference_number' => 'nullable|string|max:100',
-            'notes' => 'nullable|string',
+            'notes'            => 'nullable|string',
+            'receipt'          => 'nullable|file|mimes:jpeg,png,gif,webp,pdf|max:5120',
         ]);
 
         $validated['user_id'] = Auth::id();
-        
+        unset($validated['receipt']);
+
+        if ($request->hasFile('receipt')) {
+            $validated['receipt_path'] = $request->file('receipt')
+                ->store('receipts/' . Auth::id(), 'private');
+        }
+
         Expense::create($validated);
-        
+
         return redirect()->route('expenses.index')
             ->with('success', 'Expense recorded successfully.');
     }
@@ -138,23 +146,23 @@ class ExpenseController extends Controller
     public function show(Expense $expense)
     {
         $this->authorizeExpense($expense);
-        
+
         $expense->load(['project', 'income', 'category']);
-        
+
         return view('portal.expenses.show', compact('expense'));
     }
-    
+
     public function edit(Expense $expense)
     {
         $this->authorizeExpense($expense);
-        
+
         $user = Auth::user();
-        
+
         $categories = Category::where('user_id', $user->id)
             ->where('type', 'expense')
             ->orderBy('name')
             ->get();
-            
+
         // Get all incomes with their spent amounts - only unspent incomes
         // Also include the current expense's income (in case it was partially spent)
         $incomes = Income::where('user_id', $user->id)
@@ -166,39 +174,96 @@ class ExpenseController extends Controller
                 $isCurrentIncome = $expense->income_id == $income->id;
                 return !$isFullySpent || $isCurrentIncome;
             });
-            
+
         return view('portal.expenses.edit', compact('expense', 'categories', 'incomes'));
     }
 
     public function update(Request $request, Expense $expense)
     {
         $this->authorizeExpense($expense);
-        
+
         $validated = $request->validate([
-            'income_id' => 'nullable|exists:incomes,id',
-            'category_id' => 'nullable|exists:categories,id',
-            'vendor_name' => 'nullable|string|max:150',
-            'amount' => 'required|numeric|min:0',
-            'expense_date' => 'required|date',
-            'payment_method' => 'required|in:cash,bank_transfer,mpesa,card,other',
+            'income_id'        => 'nullable|exists:incomes,id',
+            'category_id'      => 'nullable|exists:categories,id',
+            'vendor_name'      => 'nullable|string|max:150',
+            'amount'           => 'required|numeric|min:0',
+            'expense_date'     => 'required|date',
+            'payment_method'   => 'required|in:cash,bank_transfer,mpesa,card,other',
             'reference_number' => 'nullable|string|max:100',
-            'notes' => 'nullable|string',
+            'notes'            => 'nullable|string',
+            'receipt'          => 'nullable|file|mimes:jpeg,png,gif,webp,pdf|max:5120',
+            'remove_receipt'   => 'nullable|boolean',
         ]);
 
+        unset($validated['receipt'], $validated['remove_receipt']);
+
+        if ($request->hasFile('receipt')) {
+            // Delete old receipt if exists
+            if ($expense->receipt_path) {
+                Storage::disk('local')->delete($expense->receipt_path);
+            }
+            $validated['receipt_path'] = $request->file('receipt')
+                ->store('receipts/' . Auth::id(), 'private');
+        } elseif ($request->boolean('remove_receipt') && $expense->receipt_path) {
+            Storage::disk('local')->delete($expense->receipt_path);
+            $validated['receipt_path'] = null;
+        }
+
         $expense->update($validated);
-        
-        return redirect()->route('expenses.index')
+
+        return redirect()->route('expenses.show', $expense->id)
             ->with('success', 'Expense updated successfully.');
     }
 
     public function destroy(Expense $expense)
     {
         $this->authorizeExpense($expense);
-        
+
+        // Clean up receipt file
+        if ($expense->receipt_path) {
+            Storage::disk('local')->delete($expense->receipt_path);
+        }
+
         $expense->delete();
-        
+
         return redirect()->route('expenses.index')
             ->with('success', 'Expense deleted successfully.');
+    }
+
+    /**
+     * Serve the receipt file securely (ownership-checked).
+     */
+    public function receiptView(Expense $expense)
+    {
+        $this->authorizeExpense($expense);
+
+        if (!$expense->receipt_path || !Storage::disk('local')->exists($expense->receipt_path)) {
+            abort(404, 'Receipt not found.');
+        }
+
+        $path     = Storage::disk('local')->path($expense->receipt_path);
+        $mimeType = mime_content_type($path);
+        $filename = basename($expense->receipt_path);
+
+        return response()->file($path, [
+            'Content-Type'        => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * Delete just the receipt attachment from an expense.
+     */
+    public function receiptDelete(Expense $expense)
+    {
+        $this->authorizeExpense($expense);
+
+        if ($expense->receipt_path) {
+            Storage::disk('local')->delete($expense->receipt_path);
+            $expense->update(['receipt_path' => null]);
+        }
+
+        return back()->with('success', 'Receipt removed successfully.');
     }
 
     private function authorizeExpense($expense)

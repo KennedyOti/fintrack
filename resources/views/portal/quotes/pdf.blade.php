@@ -2,447 +2,425 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quote {{ $quote->quote_number }}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* ── Page ─────────────────────────────────────────── */
+        @page {
+            size: A4 portrait;
+            margin: 14mm 14mm 14mm 14mm;
         }
-        
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 12px;
-            line-height: 1.5;
-            color: #333;
-        }
-        
-        .quote-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid #7C3AED;
-        }
-        
-        .company-info {
-            max-width: 50%;
-        }
-        
-        .company-name {
-            font-size: 24px;
-            font-weight: bold;
-            color: #7C3AED;
-            margin-bottom: 8px;
-        }
-        
-        .company-details {
+            font-family: DejaVu Sans, 'Helvetica Neue', Arial, sans-serif;
             font-size: 11px;
-            color: #6B7280;
-            line-height: 1.6;
+            line-height: 1.45;
+            color: #1E293B;
+            background: #fff;
         }
-        
-        .company-details p {
-            margin-bottom: 2px;
+
+        /* ── Header strip ─────────────────────────────────── */
+        .doc-header {
+            background-color: #0B2A4A;
+            padding: 18px 22px;
         }
-        
-        .quote-info {
-            text-align: right;
-        }
-        
-        .quote-title {
-            font-size: 32px;
+
+        .hdr-table { width: 100%; border-collapse: collapse; }
+        .hdr-table td { vertical-align: top; padding: 0; border: none; background: transparent; }
+
+        .biz-name {
+            font-size: 18px;
             font-weight: bold;
-            color: #7C3AED;
+            color: #FFFFFF;
+            margin-bottom: 5px;
+            letter-spacing: -0.3px;
+        }
+
+        .biz-detail {
+            font-size: 9.5px;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.7;
+        }
+
+        .doc-type-label {
+            font-size: 26px;
+            font-weight: bold;
+            color: #22D3EE;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 8px;
+            letter-spacing: 3px;
+            text-align: right;
+            line-height: 1;
+            margin-bottom: 4px;
         }
-        
-        .quote-number {
-            font-size: 14px;
-            color: #374151;
-            margin-bottom: 8px;
+
+        .doc-number {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            text-align: right;
+            margin-bottom: 7px;
         }
-        
-        .quote-number strong {
-            color: #7C3AED;
-        }
-        
+
         .status-badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 9px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
-        .status-draft { background-color: #6B7280; color: white; }
-        .status-sent { background-color: #3B82F6; color: white; }
-        .status-accepted { background-color: #10B981; color: white; }
-        .status-rejected { background-color: #EF4444; color: white; }
-        .status-expired { background-color: #F59E0B; color: white; }
-        .status-converted { background-color: #7C3AED; color: white; }
-        
-        .quote-details {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            gap: 40px;
+        .status-draft     { background-color: #64748B; color: #fff; }
+        .status-sent      { background-color: #0E7490; color: #fff; }
+        .status-accepted  { background-color: #22C55E; color: #fff; }
+        .status-rejected  { background-color: #F43F5E; color: #fff; }
+        .status-expired   { background-color: #F59E0B; color: #fff; }
+        .status-converted { background-color: #8B5CF6; color: #fff; }
+
+        /* ── Teal accent bar ──────────────────────────────── */
+        .accent-bar {
+            height: 3px;
+            background-color: #0E7490;
+            margin-bottom: 14px;
         }
-        
-        .info-block {
-            flex: 1;
-            padding: 20px;
-            background-color: #F9FAFB;
-            border-radius: 8px;
+
+        /* ── Info section ─────────────────────────────────── */
+        .info-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+        .info-table td { vertical-align: top; border: none; }
+
+        .info-cell {
+            background-color: #F8FAFC;
+            border-radius: 5px;
+            padding: 11px 13px;
         }
-        
-        .info-block.bill-to {
-            border-left: 4px solid #10B981;
-        }
-        
-        .info-block.quote-meta {
-            border-left: 4px solid #7C3AED;
-        }
-        
-        .section-title {
-            font-size: 10px;
+        .info-cell-left  { border-left: 3px solid #0E7490; }
+        .info-cell-right { border-left: 3px solid #0B2A4A; }
+
+        .info-label {
+            font-size: 8.5px;
             text-transform: uppercase;
-            color: #6B7280;
-            margin-bottom: 10px;
-            letter-spacing: 1.5px;
-            font-weight: 600;
-        }
-        
-        .client-name {
-            font-size: 16px;
+            letter-spacing: 1px;
+            color: #64748B;
             font-weight: bold;
-            color: #1F2937;
             margin-bottom: 6px;
         }
-        
-        .date-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-            font-size: 12px;
+
+        .client-name {
+            font-size: 13px;
+            font-weight: bold;
+            color: #0F172A;
+            margin-bottom: 4px;
         }
-        
-        .date-row .label {
-            color: #6B7280;
+
+        .client-detail {
+            font-size: 10px;
+            color: #64748B;
+            line-height: 1.6;
         }
-        
-        .date-row .value {
-            font-weight: 600;
-            color: #374151;
+
+        .meta-row { width: 100%; margin-bottom: 4px; }
+        .meta-row:last-child { margin-bottom: 0; }
+
+        .meta-l { display: inline-block; width: 44%; color: #64748B; font-size: 10px; }
+        .meta-v { font-weight: 600; color: #1E293B; font-size: 10px; }
+        .meta-v-expired { color: #F43F5E; }
+
+        /* ── Items table ──────────────────────────────────── */
+        .section-label {
+            font-size: 8.5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748B;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
-        
+
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 14px;
         }
-        
+
+        .items-table thead tr { background-color: #0B2A4A; }
+
         .items-table th {
-            background-color: #7C3AED;
-            color: white;
-            padding: 14px 12px;
+            padding: 9px 10px;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.85);
             text-align: left;
-            font-weight: 600;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-        
-        .items-table th:last-child,
-        .items-table td:last-child {
-            text-align: right;
+
+        .items-table tbody td {
+            padding: 8px 10px;
+            font-size: 10.5px;
+            color: #334155;
+            border-bottom: 1px solid #E2E8F0;
         }
-        
-        .items-table th:nth-child(2),
-        .items-table th:nth-child(3),
-        .items-table td:nth-child(2),
-        .items-table td:nth-child(3) {
-            text-align: center;
-        }
-        
-        .items-table td {
-            padding: 14px 12px;
-            border-bottom: 1px solid #E5E7EB;
-            font-size: 12px;
-        }
-        
-        .items-table tr:nth-child(even) {
-            background-color: #F9FAFB;
-        }
-        
-        .items-table tr:hover {
-            background-color: #F3E8FF;
-        }
-        
-        .summary {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 40px;
-        }
-        
-        .summary-table {
-            width: 280px;
-            border-collapse: collapse;
-        }
-        
-        .summary-table td {
+
+        .items-table tbody tr:nth-child(even) td { background-color: #F8FAFC; }
+        .items-table tbody tr:last-child td { border-bottom: none; }
+
+        /* ── Bottom: notes + summary ──────────────────────── */
+        .bottom-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+        .bottom-table td { vertical-align: top; border: none; }
+
+        .notes-box {
+            background-color: #FEFCE8;
+            border-left: 3px solid #F59E0B;
+            border-radius: 5px;
             padding: 10px 12px;
-            font-size: 12px;
+            margin-bottom: 10px;
         }
-        
-        .summary-table .label {
-            color: #6B7280;
-            text-align: right;
-        }
-        
-        .summary-table .value {
-            font-weight: 600;
-            text-align: right;
-        }
-        
-        .summary-table tr:last-child {
-            background-color: #7C3AED;
-            color: white;
-        }
-        
-        .summary-table tr:last-child .label,
-        .summary-table tr:last-child .value {
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        
-        .summary-table .divider {
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .notes {
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #F9FAFB;
-            border-radius: 8px;
-        }
-        
         .notes-title {
-            font-size: 12px;
+            font-size: 8.5px;
             font-weight: bold;
-            color: #374151;
-            margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            color: #92400E;
+            margin-bottom: 5px;
         }
-        
-        .notes-content {
-            font-size: 11px;
-            color: #6B7280;
-            line-height: 1.6;
+        .notes-text { font-size: 10px; color: #78350F; line-height: 1.5; }
+
+        .terms-box {
+            background-color: #F1F5F9;
+            border-left: 3px solid #0E7490;
+            border-radius: 5px;
+            padding: 10px 12px;
         }
-        
-        .terms {
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #FEF3C7;
-            border-radius: 8px;
-            border-left: 4px solid #F59E0B;
-        }
-        
         .terms-title {
-            font-size: 12px;
+            font-size: 8.5px;
             font-weight: bold;
-            color: #92400E;
-            margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            color: #334155;
+            margin-bottom: 5px;
         }
-        
-        .terms-content {
-            font-size: 11px;
-            color: #92400E;
+        .terms-item {
+            font-size: 9.5px;
+            color: #64748B;
             line-height: 1.6;
+            margin-bottom: 2px;
         }
-        
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #E5E7EB;
+
+        .summary-box {
+            background-color: #F8FAFC;
+            border-radius: 5px;
+            padding: 11px 13px;
+        }
+
+        .sum-row { width: 100%; border-bottom: 1px solid #E2E8F0; padding: 4px 0; }
+        .sum-row:last-child { border-bottom: none; }
+
+        .sum-l { display: inline-block; width: 55%; color: #64748B; font-size: 10.5px; }
+        .sum-v { font-weight: 600; font-size: 10.5px; color: #1E293B; }
+
+        .sum-divider { border-top: 2px solid #0B2A4A; padding-top: 6px; margin-top: 2px; border-bottom: none; }
+
+        .sum-l-total { display: inline-block; width: 55%; font-weight: bold; font-size: 11px; color: #0F172A; }
+        .sum-v-total { font-weight: bold; font-size: 14px; color: #0B2A4A; }
+
+        /* ── Valid-until banner ───────────────────────────── */
+        .validity-bar {
+            background-color: #0E7490;
+            color: #fff;
             text-align: center;
+            padding: 7px 14px;
+            border-radius: 5px;
             font-size: 10px;
-            color: #9CA3AF;
+            font-weight: bold;
+            margin-bottom: 14px;
+            letter-spacing: 0.3px;
         }
-        
-        .footer p {
-            margin-bottom: 4px;
+        .validity-bar.expired { background-color: #F43F5E; }
+
+        /* ── Footer ───────────────────────────────────────── */
+        .doc-footer {
+            border-top: 1px solid #E2E8F0;
+            padding-top: 9px;
+            text-align: center;
         }
-        
-        @media print {
-            body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-        }
+        .footer-biz { font-size: 10px; font-weight: 600; color: #475569; margin-bottom: 2px; }
+        .footer-sub { font-size: 8.5px; color: #94A3B8; }
     </style>
 </head>
 <body>
-    <div class="quote-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="company-info">
-                <div class="company-name">{{ $businessInfo['business_name'] }}</div>
-                <div class="company-details">
+
+{{-- ── Header ──────────────────────────────────────────────────── --}}
+<div class="doc-header">
+    <table class="hdr-table">
+        <tr>
+            <td style="width:55%;">
+                <div class="biz-name">{{ $businessInfo['business_name'] ?? 'Your Business' }}</div>
+                <div class="biz-detail">
                     @if($businessInfo['business_address'])
-                        <p>{{ $businessInfo['business_address'] }}</p>
+                        <div>{{ str_replace(["\r\n", "\n", "\r"], ' &bull; ', trim(e($businessInfo['business_address']))) }}</div>
                     @endif
-                    @if($businessInfo['email'])
-                        <p>Email: {{ $businessInfo['email'] }}</p>
-                    @endif
-                    @if($businessInfo['phone'])
-                        <p>Phone: {{ $businessInfo['phone'] }}</p>
-                    @endif
-                    @if($businessInfo['tax_number'])
-                        <p>Tax ID: {{ $businessInfo['tax_number'] }}</p>
-                    @endif
+                    @if($businessInfo['email']) <div>{{ $businessInfo['email'] }}</div> @endif
+                    @if($businessInfo['phone']) <div>{{ $businessInfo['phone'] }}</div> @endif
+                    @if($businessInfo['tax_number']) <div>Tax ID: {{ $businessInfo['tax_number'] }}</div> @endif
                 </div>
-            </div>
-            <div class="quote-info">
-                <div class="quote-title">QUOTE</div>
-                <div class="quote-number">
-                    <strong>{{ $quote->quote_number }}</strong>
-                </div>
+            </td>
+            <td style="width:45%; vertical-align:top; text-align:right;">
+                <div class="doc-type-label">Quote</div>
+                <div class="doc-number"># {{ $quote->quote_number }}</div>
                 <span class="status-badge status-{{ $quote->status }}">{{ ucfirst($quote->status) }}</span>
-            </div>
-        </div>
-        
-        <!-- Quote Details -->
-        <div class="quote-details">
-            <div class="info-block bill-to">
-                <div class="section-title">Quote To</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="accent-bar"></div>
+
+{{-- ── Validity banner ─────────────────────────────────────────── --}}
+@php $isExpired = $quote->valid_until->isPast() && !in_array($quote->status, ['accepted', 'converted']); @endphp
+<div class="validity-bar {{ $isExpired ? 'expired' : '' }}">
+    @if($isExpired)
+        &#9888; &nbsp; This quote expired on {{ $quote->valid_until->format('M d, Y') }}. Please contact us for an updated quote.
+    @else
+        This quote is valid until &nbsp;<strong>{{ $quote->valid_until->format('M d, Y') }}</strong>
+        @if(in_array($quote->status, ['accepted', 'converted']))
+            &nbsp;&mdash;&nbsp; Accepted
+        @endif
+    @endif
+</div>
+
+{{-- ── Prepared For + Quote Meta ──────────────────────────────── --}}
+<table class="info-table">
+    <tr>
+        <td style="width:48%;">
+            <div class="info-cell info-cell-left">
+                <div class="info-label">Prepared For</div>
                 @if($quote->client)
                     <div class="client-name">{{ $quote->client->name }}</div>
-                    @if($quote->client->company_name)
-                        <p style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">{{ $quote->client->company_name }}</p>
-                    @endif
-                    @if($quote->client->email)
-                        <p style="font-size: 11px; color: #6B7280;">{{ $quote->client->email }}</p>
-                    @endif
-                    @if($quote->client->phone)
-                        <p style="font-size: 11px; color: #6B7280;">{{ $quote->client->phone }}</p>
-                    @endif
-                    @if($quote->client->address)
-                        <p style="font-size: 11px; color: #6B7280; margin-top: 4px;">{{ $quote->client->address }}</p>
-                    @endif
+                    <div class="client-detail">
+                        @if($quote->client->company_name) {{ $quote->client->company_name }}<br> @endif
+                        @if($quote->client->email)        {{ $quote->client->email }}<br>        @endif
+                        @if($quote->client->phone)        {{ $quote->client->phone }}<br>        @endif
+                        @if($quote->client->address)      {{ $quote->client->address }}          @endif
+                    </div>
                 @else
-                    <p style="font-size: 12px; color: #6B7280;">No client specified</p>
+                    <div class="client-detail" style="color:#94A3B8;">No client assigned</div>
                 @endif
             </div>
-            <div class="info-block quote-meta">
-                <div class="section-title">Quote Details</div>
-                <div class="date-row">
-                    <span class="label">Issue Date:</span>
-                    <span class="value">{{ $quote->issue_date->format('M d, Y') }}</span>
+        </td>
+        <td style="width:4%;"></td>
+        <td style="width:48%;">
+            <div class="info-cell info-cell-right">
+                <div class="info-label">Quote Details</div>
+                <div class="meta-row">
+                    <span class="meta-l">Quote Number</span>
+                    <span class="meta-v">{{ $quote->quote_number }}</span>
                 </div>
-                <div class="date-row">
-                    <span class="label">Valid Until:</span>
-                    <span class="value">{{ $quote->valid_until->format('M d, Y') }}</span>
+                <div class="meta-row">
+                    <span class="meta-l">Issue Date</span>
+                    <span class="meta-v">{{ $quote->issue_date->format('M d, Y') }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-l">Valid Until</span>
+                    <span class="meta-v {{ $isExpired ? 'meta-v-expired' : '' }}">
+                        {{ $quote->valid_until->format('M d, Y') }}@if($isExpired) &nbsp;&#9888;@endif
+                    </span>
                 </div>
                 @if($quote->project)
-                <div class="date-row">
-                    <span class="label">Project:</span>
-                    <span class="value">{{ $quote->project->title }}</span>
+                <div class="meta-row">
+                    <span class="meta-l">Project</span>
+                    <span class="meta-v">{{ $quote->project->title }}</span>
                 </div>
                 @endif
+                <div class="meta-row">
+                    <span class="meta-l">Currency</span>
+                    <span class="meta-v">{{ $currencyCode }}</span>
+                </div>
             </div>
-        </div>
-        
-        <!-- Items Table -->
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>Description</th>
-                    <th>Qty</th>
-                    <th>Unit Price</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($quote->items as $item)
-                <tr>
-                    <td>{{ $item->description }}</td>
-                    <td>{{ number_format($item->quantity, 2) }}</td>
-                    <td>{{ $currencySymbol }}{{ number_format($item->unit_price, 2) }}</td>
-                    <td>{{ $currencySymbol }}{{ number_format($item->total, 2) }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        
-        <!-- Summary -->
-        <div class="summary">
-            <table class="summary-table">
-                <tr>
-                    <td class="label">Subtotal</td>
-                    <td class="value">{{ $currencySymbol }}{{ number_format($quote->subtotal, 2) }}</td>
-                </tr>
+        </td>
+    </tr>
+</table>
+
+{{-- ── Scope of Work ────────────────────────────────────────────── --}}
+<div class="section-label">Scope of Work</div>
+<table class="items-table">
+    <thead>
+        <tr>
+            <th style="width:47%;">Description</th>
+            <th style="width:11%; text-align:center;">Qty</th>
+            <th style="width:21%; text-align:right;">Unit Price</th>
+            <th style="width:21%; text-align:right;">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($quote->items as $item)
+        <tr>
+            <td>{{ $item->description }}</td>
+            <td style="text-align:center; color:#64748B;">{{ number_format($item->quantity, 2) }}</td>
+            <td style="text-align:right; color:#64748B;">{{ $currencySymbol }}{{ number_format($item->unit_price, 2) }}</td>
+            <td style="text-align:right; font-weight:600; color:#0F172A;">{{ $currencySymbol }}{{ number_format($item->total, 2) }}</td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="4" style="text-align:center; color:#94A3B8; padding:16px 10px;">No items</td>
+        </tr>
+        @endforelse
+    </tbody>
+</table>
+
+{{-- ── Notes + Summary ─────────────────────────────────────────── --}}
+<table class="bottom-table">
+    <tr>
+        <td>
+            @if($quote->notes)
+            <div class="notes-box">
+                <div class="notes-title">Notes</div>
+                <div class="notes-text">{{ $quote->notes }}</div>
+            </div>
+            @endif
+
+            <div class="terms-box">
+                <div class="terms-title">Terms &amp; Conditions</div>
+                <div class="terms-item">&#8226; Valid until {{ $quote->valid_until->format('M d, Y') }}. Prices subject to change after validity period.</div>
+                <div class="terms-item">&#8226; To accept, reply to this quote or contact us directly.</div>
+                <div class="terms-item">&#8226; Payment terms will be confirmed upon acceptance.</div>
+            </div>
+        </td>
+        <td style="width:14px;"></td>
+        <td style="width:215px; vertical-align:top;">
+            <div class="summary-box">
+                <div class="sum-row">
+                    <span class="sum-l">Subtotal</span>
+                    <span class="sum-v" style="float:right;">{{ $currencySymbol }}{{ number_format($quote->subtotal, 2) }}</span>
+                </div>
                 @if($quote->tax_amount > 0)
-                <tr>
-                    <td class="label">Tax</td>
-                    <td class="value">{{ $currencySymbol }}{{ number_format($quote->tax_amount, 2) }}</td>
-                </tr>
+                <div class="sum-row">
+                    <span class="sum-l">Tax</span>
+                    <span class="sum-v" style="float:right;">{{ $currencySymbol }}{{ number_format($quote->tax_amount, 2) }}</span>
+                </div>
                 @endif
                 @if($quote->discount_amount > 0)
-                <tr>
-                    <td class="label">Discount</td>
-                    <td class="value">-{{ $currencySymbol }}{{ number_format($quote->discount_amount, 2) }}</td>
-                </tr>
+                <div class="sum-row">
+                    <span class="sum-l">Discount</span>
+                    <span class="sum-v" style="float:right; color:#22C55E;">-{{ $currencySymbol }}{{ number_format($quote->discount_amount, 2) }}</span>
+                </div>
                 @endif
-                <tr>
-                    <td class="label">Total</td>
-                    <td class="value">{{ $currencySymbol }}{{ number_format($quote->total_amount, 2) }}</td>
-                </tr>
-            </table>
-        </div>
-        
-        <!-- Notes -->
-        @if($quote->notes)
-        <div class="notes">
-            <div class="notes-title">Notes</div>
-            <div class="notes-content">{{ $quote->notes }}</div>
-        </div>
-        @endif
-        
-        <!-- Terms -->
-        <div class="terms">
-            <div class="terms-title">Terms & Conditions</div>
-            <div class="terms-content">
-                <p>• This quote is valid until {{ $quote->valid_until->format('M d, Y') }}.</p>
-                <p>• Prices are subject to change after the validity period.</p>
-                <p>• To accept this quote, please contact us or sign and return a copy.</p>
-                <p>• Payment terms will be discussed upon quote acceptance.</p>
+                <div class="sum-divider">
+                    <span class="sum-l-total">Total ({{ $currencyCode }})</span>
+                    <span class="sum-v-total" style="float:right;">{{ $currencySymbol }}{{ number_format($quote->total_amount, 2) }}</span>
+                </div>
             </div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="footer">
-            <p>Thank you for your business!</p>
-            <p>Generated by FinTrack on {{ now()->format('M d, Y h:i A') }}</p>
-        </div>
+        </td>
+    </tr>
+</table>
+
+{{-- ── Footer ───────────────────────────────────────────────────── --}}
+<div class="doc-footer">
+    <div class="footer-biz">{{ $businessInfo['business_name'] ?? 'Your Business' }}</div>
+    <div class="footer-sub">
+        Thank you for your business &nbsp;&middot;&nbsp;
+        Generated by FinTrack &nbsp;&middot;&nbsp;
+        {{ now()->format('M d, Y') }}
     </div>
+</div>
+
 </body>
 </html>

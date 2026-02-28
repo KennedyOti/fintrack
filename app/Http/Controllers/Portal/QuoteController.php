@@ -11,6 +11,7 @@ use App\Helpers\CurrencyHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class QuoteController extends Controller
@@ -285,6 +286,28 @@ class QuoteController extends Controller
         $message = 'Quote ' . ($labels[$validated['status']] ?? 'updated') . ' successfully.';
 
         return redirect()->route('quotes.show', $quote)->with('success', $message);
+    }
+
+    public function generateShareLink(Quote $quote)
+    {
+        $this->authorizeQuote($quote);
+
+        $token = Str::random(48);
+        $quote->update(['share_token' => $token]);
+
+        return response()->json([
+            'url'   => url('/view/quote/' . $token),
+            'token' => $token,
+        ]);
+    }
+
+    public function revokeShareLink(Quote $quote)
+    {
+        $this->authorizeQuote($quote);
+
+        $quote->update(['share_token' => null]);
+
+        return response()->json(['success' => true]);
     }
 
     private function authorizeQuote($quote)

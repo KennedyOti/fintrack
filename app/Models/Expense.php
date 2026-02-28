@@ -22,6 +22,7 @@ class Expense extends Model
         'payment_method',
         'reference_number',
         'notes',
+        'receipt_path',
     ];
 
     protected $casts = [
@@ -50,5 +51,18 @@ class Expense extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function receiptIsImage(): bool
+    {
+        if (!$this->receipt_path) return false;
+        $ext = strtolower(pathinfo($this->receipt_path, PATHINFO_EXTENSION));
+        return in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+    }
+
+    public function receiptIsPdf(): bool
+    {
+        if (!$this->receipt_path) return false;
+        return strtolower(pathinfo($this->receipt_path, PATHINFO_EXTENSION)) === 'pdf';
     }
 }

@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
@@ -406,6 +407,28 @@ class InvoiceController extends Controller
         if (in_array($newStatus, ['draft', 'cancelled']) && $receivable) {
             $receivable->delete();
         }
+    }
+
+    public function generateShareLink(Invoice $invoice)
+    {
+        $this->authorizeInvoice($invoice);
+
+        $token = Str::random(48);
+        $invoice->update(['share_token' => $token]);
+
+        return response()->json([
+            'url'   => url('/view/invoice/' . $token),
+            'token' => $token,
+        ]);
+    }
+
+    public function revokeShareLink(Invoice $invoice)
+    {
+        $this->authorizeInvoice($invoice);
+
+        $invoice->update(['share_token' => null]);
+
+        return response()->json(['success' => true]);
     }
 
     private function authorizeInvoice($invoice)

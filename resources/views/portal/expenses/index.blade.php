@@ -162,6 +162,7 @@
                         <th>Amount</th>
                         <th>Payment</th>
                         <th>Reference</th>
+                        <th style="width:44px;" title="Receipt attached"><i class="fas fa-paperclip" style="color:var(--text-faint);"></i></th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -224,6 +225,17 @@
                             @endswitch
                         </td>
                         <td style="font-size:12px;color:var(--text-muted);">{{ $expense->reference_number ?: '—' }}</td>
+                        <td>
+                            @if($expense->receipt_path)
+                            <a href="{{ route('expenses.receipt.view', $expense->id) }}" target="_blank"
+                               title="{{ $expense->receiptIsPdf() ? 'PDF receipt attached' : 'Image receipt attached' }}"
+                               style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:rgba(14,116,144,.10);color:var(--ft-teal);text-decoration:none;font-size:12px;">
+                                <i class="fas fa-{{ $expense->receiptIsPdf() ? 'file-pdf' : 'image' }}"></i>
+                            </a>
+                            @else
+                            <span style="color:var(--text-faint);font-size:13px;">—</span>
+                            @endif
+                        </td>
                         <td class="text-end">
                             <div class="dropdown">
                                 <button class="btn btn-xs btn-light" data-bs-toggle="dropdown" aria-expanded="false">

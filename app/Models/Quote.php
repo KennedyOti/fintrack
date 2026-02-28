@@ -25,6 +25,7 @@ class Quote extends Model
         'total_amount',
         'status',
         'notes',
+        'share_token',
     ];
 
     protected $casts = [
@@ -70,5 +71,13 @@ class Quote extends Model
         $lastQuote = self::orderBy('id', 'desc')->first();
         $number = $lastQuote ? $lastQuote->id + 1 : 1;
         return 'QUO-' . str_pad($number, 5, '0', STR_PAD_LEFT);
+    }
+
+    public function getShareUrl(): ?string
+    {
+        if (!$this->share_token) {
+            return null;
+        }
+        return url('/view/quote/' . $this->share_token);
     }
 }
