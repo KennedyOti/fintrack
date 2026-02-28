@@ -10,21 +10,17 @@ return new class extends Migration
     {
         Schema::create('attachments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->unsignedBigInteger('attachable_id');
             $table->string('attachable_type', 150);
-            
-            $table->string('file_path', 255);
-            $table->string('file_name', 255);
+            $table->string('file_path');
+            $table->string('file_name');
             $table->integer('file_size')->nullable();
             $table->string('mime_type', 150)->nullable();
-            
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index('attachable_id');
-            $table->index('attachable_type');
+
+            $table->index(['attachable_id', 'attachable_type']);
         });
     }
 

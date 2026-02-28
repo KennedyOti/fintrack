@@ -10,23 +10,18 @@ return new class extends Migration
     {
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('set null');
-            $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
-            
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('income_id')->nullable()->constrained('incomes')->nullOnDelete();
             $table->string('vendor_name', 150)->nullable();
             $table->decimal('amount', 15, 2);
-            $table->dateTime('expense_date');
+            $table->datetime('expense_date');
             $table->enum('payment_method', ['cash', 'bank_transfer', 'mpesa', 'card', 'other']);
             $table->string('reference_number', 100)->nullable();
             $table->text('notes')->nullable();
-            
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index('user_id');
-            $table->index('project_id');
-            $table->index('expense_date');
         });
     }
 

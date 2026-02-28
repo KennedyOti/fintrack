@@ -10,19 +10,15 @@ return new class extends Migration
     {
         Schema::create('savings_transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('savings_account_id')->constrained('savings_accounts')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            
+            $table->foreignId('savings_account_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('income_id')->nullable()->constrained('incomes')->nullOnDelete();
             $table->enum('type', ['deposit', 'withdrawal']);
             $table->decimal('amount', 15, 2);
-            $table->dateTime('transaction_date');
+            $table->datetime('transaction_date');
             $table->text('notes')->nullable();
-            
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index('savings_account_id');
-            $table->index('transaction_date');
         });
     }
 

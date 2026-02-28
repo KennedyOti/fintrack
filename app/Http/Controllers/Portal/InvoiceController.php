@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
@@ -129,41 +128,25 @@ class InvoiceController extends Controller
         $validated['user_id'] = Auth::id();
         
         try {
-            DB::transaction(function () use ($validated, $request) {
+            DB::transaction(function () use ($validated) {
                 Log::info('Creating invoice in transaction');
-                
+
                 $invoice = Invoice::create($validated);
                 Log::info('Invoice created', ['invoice_id' => $invoice->id]);
-                
+
                 foreach ($validated['items'] as $item) {
                     InvoiceItem::create([
-                        'invoice_id' => $invoice->id,
+                        'invoice_id'  => $invoice->id,
                         'description' => $item['description'],
-                        'quantity' => $item['quantity'],
-                        'unit_price' => $item['unit_price'],
-                        'total' => $item['total'],
+                        'quantity'    => $item['quantity'],
+                        'unit_price'  => $item['unit_price'],
+                        'total'       => $item['total'],
                     ]);
                 }
                 Log::info('Invoice items created');
-                
-                // Create receivable if invoice is sent, partial, or overdue
-                if (in_array($validated['status'], ['sent', 'partial', 'overdue'])) {
-                    Log::info('Creating debts receivable', ['status' => $validated['status']]);
-                    $debtStatus = 'pending';
-                    if ($validated['status'] === 'partial') {
-                        $debtStatus = 'partial';
-                    }
-                    DebtsReceivable::create([
-                        'user_id' => $validated['user_id'],
-                        'client_id' => $validated['client_id'],
-                        'invoice_id' => $invoice->id,
-                        'original_amount' => $validated['total_amount'],
-                        'paid_amount' => 0,
-                        'due_date' => $validated['due_date'],
-                        'status' => $debtStatus,
-                    ]);
-                }
-                
+
+                // Auto-create the receivable for sent / partial / overdue invoices
+                $this->syncDebtsReceivable($invoice, $validated['status']);
                 Log::info('Transaction completed successfully');
             });
             
@@ -240,27 +223,30 @@ class InvoiceController extends Controller
         // Calculate paid amount from the invoice's paid_amount column
         $paidAmount = $invoice->paid_amount;
         $validated['paid_amount'] = $paidAmount;
-        
+
         $invoice->update($validated);
-        
+
+        // Sync DebtsReceivable based on the new status
+        $this->syncDebtsReceivable($invoice, $validated['status']);
+
         // Only create/update income record if there are actual payments
         if ($paidAmount > 0) {
             // Create income record when status changes to partial or paid
             if (in_array($validated['status'], ['partial', 'paid']) && !in_array($oldStatus, ['partial', 'paid'])) {
                 $this->createIncomeFromInvoice($invoice);
             }
-            
+
             // Update income record if status is already partial/paid and payments have changed
             if (in_array($validated['status'], ['partial', 'paid'])) {
                 $this->updateIncomeFromInvoice($invoice);
             }
         }
-        
+
         // Delete income record if status changed from paid/partial to something else OR no payments exist
         if (!in_array($validated['status'], ['partial', 'paid']) && in_array($oldStatus, ['partial', 'paid'])) {
             Income::where('invoice_id', $invoice->id)->delete();
         }
-        
+
         return redirect()->route('invoices.index')
             ->with('success', 'Invoice updated successfully.');
     }
@@ -360,6 +346,58 @@ class InvoiceController extends Controller
         $pdf = PDF::loadView('portal.invoices.pdf', compact('invoice', 'businessInfo', 'currencyCode', 'currencySymbol'));
         
         return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
+    }
+
+    /**
+     * Create, update, or delete the linked DebtsReceivable whenever an invoice
+     * status changes.  Called from both store() and update().
+     */
+    private function syncDebtsReceivable(Invoice $invoice, string $newStatus): void
+    {
+        $receivable = DebtsReceivable::where('invoice_id', $invoice->id)->first();
+
+        if (in_array($newStatus, ['sent', 'partial', 'overdue'])) {
+            $debtStatus = match($newStatus) {
+                'partial' => 'partial',
+                'overdue' => 'overdue',
+                default   => 'pending',
+            };
+
+            if (!$receivable) {
+                // Create the receivable for the first time
+                DebtsReceivable::create([
+                    'user_id'         => $invoice->user_id,
+                    'client_id'       => $invoice->client_id,
+                    'invoice_id'      => $invoice->id,
+                    'original_amount' => $invoice->total_amount,
+                    'paid_amount'     => $invoice->paid_amount,
+                    'due_date'        => $invoice->due_date,
+                    'status'          => $debtStatus,
+                ]);
+            } else {
+                // Keep amounts and due date in sync when the invoice is edited
+                $receivable->update([
+                    'original_amount' => $invoice->total_amount,
+                    'due_date'        => $invoice->due_date,
+                    'client_id'       => $invoice->client_id,
+                ]);
+            }
+
+            return;
+        }
+
+        if ($newStatus === 'paid' && $receivable) {
+            $receivable->update([
+                'paid_amount' => $invoice->total_amount,
+                'status'      => 'paid',
+            ]);
+            return;
+        }
+
+        // draft / cancelled → remove the receivable so it doesn't show as outstanding
+        if (in_array($newStatus, ['draft', 'cancelled']) && $receivable) {
+            $receivable->delete();
+        }
     }
 
     private function authorizeInvoice($invoice)

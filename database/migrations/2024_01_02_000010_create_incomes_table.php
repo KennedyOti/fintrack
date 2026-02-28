@@ -10,24 +10,18 @@ return new class extends Migration
     {
         Schema::create('incomes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('client_id')->nullable()->constrained('clients')->onDelete('set null');
-            $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('set null');
-            $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
-            
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('client_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('invoice_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('amount', 15, 2);
-            $table->dateTime('income_date');
+            $table->datetime('income_date');
             $table->enum('payment_method', ['cash', 'bank_transfer', 'mpesa', 'card', 'paypal', 'other']);
             $table->string('reference_number', 100)->nullable();
             $table->text('notes')->nullable();
-            
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index('user_id');
-            $table->index('client_id');
-            $table->index('project_id');
-            $table->index('income_date');
         });
     }
 

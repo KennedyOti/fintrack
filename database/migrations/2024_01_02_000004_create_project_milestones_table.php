@@ -10,19 +10,14 @@ return new class extends Migration
     {
         Schema::create('project_milestones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
-            
+            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->string('title', 200);
             $table->text('description')->nullable();
             $table->date('due_date')->nullable();
-            $table->decimal('amount', 15, 2)->default(0);
+            $table->decimal('amount', 15, 2)->default(0.00);
             $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending');
-            
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index('project_id');
-            $table->index('status');
         });
     }
 

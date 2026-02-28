@@ -78,14 +78,16 @@ class SavingsController extends Controller
             ->with('success', 'Savings account created successfully.');
     }
 
-    public function show(SavingsAccount $savings)
+    public function show(SavingsAccount $saving)
     {
+        $savings = $saving;
+
         // If savings account is null due to route model binding (not found or not owned by user)
         // This will now return 404 because resolveRouteBinding scopes to current user
         if (!$savings) {
             abort(404);
         }
-        
+
         $savings->load(['transactions' => function ($query) {
             $query->latest();
         }]);
@@ -109,15 +111,17 @@ class SavingsController extends Controller
         return view('portal.savings.show', compact('savings', 'netIncome', 'availableIncome', 'currencySymbol', 'currencyCode'));
     }
 
-    public function edit(SavingsAccount $savings)
+    public function edit(SavingsAccount $saving)
     {
+        $savings = $saving;
         $this->authorizeSavings($savings);
-        
+
         return view('portal.savings.edit', compact('savings'));
     }
 
-    public function update(Request $request, SavingsAccount $savings)
+    public function update(Request $request, SavingsAccount $saving)
     {
+        $savings = $saving;
         $this->authorizeSavings($savings);
         
         $validated = $request->validate([
@@ -133,10 +137,11 @@ class SavingsController extends Controller
             ->with('success', 'Savings account updated successfully.');
     }
 
-    public function destroy(SavingsAccount $savings)
+    public function destroy(SavingsAccount $saving)
     {
+        $savings = $saving;
         $this->authorizeSavings($savings);
-        
+
         $savings->delete();
         
         return redirect()->route('savings.index')

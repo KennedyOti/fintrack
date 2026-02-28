@@ -10,8 +10,7 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name', 150);
             $table->string('company_name', 150)->nullable();
             $table->string('email', 150);
@@ -19,14 +18,9 @@ return new class extends Migration
             $table->text('address')->nullable();
             $table->string('tax_number', 100)->nullable();
             $table->text('notes')->nullable();
-            
             $table->enum('status', ['active', 'inactive'])->default('active');
-            
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index('user_id');
-            $table->index('email');
         });
     }
 

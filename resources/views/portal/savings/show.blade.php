@@ -10,7 +10,7 @@
         <p class="text-muted mb-0">Savings Account Details</p>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ route('savings.edit', ['savings' => $savings->id]) }}" class="btn btn-outline-primary">
+        <a href="{{ route('savings.edit', ['saving' => $savings->id]) }}" class="btn btn-outline-primary">
             <i class="fas fa-edit me-1"></i> Edit
         </a>
         <a href="{{ route('savings.index') }}" class="btn btn-outline-secondary">
