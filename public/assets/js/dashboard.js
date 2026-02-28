@@ -1,98 +1,75 @@
-// FinTrack Portal Dashboard JavaScript
+// FinTrack Portal — Main UI Script
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Sidebar toggle
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.querySelector('.main-content');
+document.addEventListener('DOMContentLoaded', function () {
 
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('active');
+    // ── Sidebar state
+    const sidebar  = document.getElementById('sidebar');
+    const overlay  = document.getElementById('sidebarOverlay');
+    const toggle   = document.getElementById('sidebarToggle');
+
+    function openSidebar() {
+        if (!sidebar) return;
+        sidebar.classList.add('open');
+        if (overlay) overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        if (!sidebar) return;
+        sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    if (toggle) {
+        toggle.addEventListener('click', function () {
+            sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
         });
     }
 
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth < 992) {
-            if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                sidebar.classList.remove('active');
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    // Close sidebar on resize to desktop
+    window.addEventListener('resize', function () {
+        if (window.innerWidth >= 992) closeSidebar();
+    });
+
+    // ── Auto-dismiss flash alerts after 5 s
+    document.querySelectorAll('.alert.alert-dismissible').forEach(function (el) {
+        setTimeout(function () {
+            if (el.isConnected) {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(el);
+                bsAlert.close();
             }
-        }
+        }, 5000);
     });
 
-    // Handle window resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth >= 992) {
-            sidebar.classList.remove('active');
-        }
-    });
-
-    // Active menu highlighting
-    const currentPath = window.location.pathname;
-    document.querySelectorAll('.sidebar-menu .nav-link').forEach(link => {
-        if (link.getAttribute('href') === currentPath) {
-            link.classList.add('active');
-        }
-    });
-
-    // Confirm delete
-    const deleteButtons = document.querySelectorAll('.btn-delete');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            if (!confirm('Are you sure you want to delete this item?')) {
+    // ── Confirm delete: add class="btn-delete" to any delete trigger
+    document.querySelectorAll('.btn-delete').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!confirm('Are you sure you want to delete this item?\nThis action cannot be undone.')) {
                 e.preventDefault();
             }
         });
     });
 
-    // Auto-hide alerts
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(alert => {
-        setTimeout(() => {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        }, 5000);
-    });
-
-    // Form validation
-    const forms = document.querySelectorAll('.needs-validation');
-    Array.prototype.slice.call(forms).forEach(function(form) {
-        form.addEventListener('submit', function(event) {
+    // ── Bootstrap HTML5 form validation
+    document.querySelectorAll('.needs-validation').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
             if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
+                e.preventDefault();
+                e.stopPropagation();
             }
             form.classList.add('was-validated');
         }, false);
     });
 
-    // Number formatting
-    window.formatNumber = function(number) {
-        return new Intl.NumberFormat('en-US').format(number);
-    };
-
-    // Currency formatting
-    window.formatCurrency = function(amount, currency = 'KES') {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currency
-        }).format(amount);
-    };
-
-    // Chart.js defaults
+    // ── Chart.js global defaults
     if (typeof Chart !== 'undefined') {
-        Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
-        Chart.defaults.color = '#6B7280';
+        Chart.defaults.font.family = "'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif";
+        Chart.defaults.color = '#64748B';
     }
-});
 
-// Sidebar collapse animation
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.querySelector('.main-content');
-    
-    if (window.innerWidth < 992) {
-        sidebar.classList.toggle('active');
-    }
-}
+});
