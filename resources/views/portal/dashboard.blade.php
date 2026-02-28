@@ -228,6 +228,77 @@
 
 </div>
 
+{{-- ── Budget Alerts ────────────────────────────────── --}}
+@if($budgetAlerts->isNotEmpty())
+<div class="card mb-4" style="border-left:3px solid var(--ft-amber);">
+    <div class="card-header">
+        <h6 class="card-header-title">
+            <span class="card-header-icon" style="background:rgba(245,158,11,.12);">
+                <i class="fas fa-gauge-high" style="color:var(--ft-amber);"></i>
+            </span>
+            Budget Alerts — {{ now()->format('F Y') }}
+        </h6>
+        <a href="{{ route('expense.categories.index') }}" class="btn btn-xs btn-outline-secondary">
+            View all <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    <div class="card-body" style="padding:16px 20px;">
+        <div class="row g-3">
+            @foreach($budgetAlerts as $bcat)
+            @php
+                $spent  = $bcat->spent_this_month;
+                $budget = (float) $bcat->monthly_budget;
+                $rawPct = round(($spent / $budget) * 100, 1);
+                $pct    = min($rawPct, 100);
+                $over   = $rawPct >= 100;
+                $barClr = $over ? 'var(--ft-rose)' : 'var(--ft-amber)';
+                $dotClr = $bcat->color ?: '#6B7280';
+            @endphp
+            <div class="col-12 col-sm-6 col-xl-4">
+                <div style="padding:12px 14px;border-radius:var(--r-md);background:{{ $over ? 'rgba(244,63,94,.05)' : 'rgba(245,158,11,.05)' }};border:1px solid {{ $over ? 'rgba(244,63,94,.18)' : 'rgba(245,158,11,.20)' }};">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2" style="min-width:0;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:{{ $dotClr }};flex-shrink:0;display:inline-block;"></span>
+                            <span style="font-size:13px;font-weight:700;color:var(--text-h);">{{ $bcat->name }}</span>
+                        </div>
+                        @if($over)
+                            <span class="badge" style="background:rgba(244,63,94,.12);color:var(--ft-rose);font-size:10px;">
+                                <i class="fas fa-triangle-exclamation me-1"></i>Over Budget
+                            </span>
+                        @else
+                            <span class="badge" style="background:rgba(245,158,11,.12);color:#B45309;font-size:10px;">
+                                <i class="fas fa-exclamation-circle me-1"></i>Near Limit
+                            </span>
+                        @endif
+                    </div>
+                    <div class="progress mb-2" style="height:6px;border-radius:99px;background:var(--border);">
+                        <div class="progress-bar" role="progressbar"
+                             style="width:{{ $pct }}%;background:{{ $barClr }};border-radius:99px;"
+                             aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between" style="font-size:11.5px;">
+                        <span style="font-weight:700;color:{{ $barClr }};">{{ $rawPct }}%</span>
+                        <span style="color:var(--text-muted);">
+                            {{ $currencySymbol }}{{ number_format($spent, 2) }} / {{ $currencySymbol }}{{ number_format($budget, 2) }}
+                        </span>
+                    </div>
+                    @if($over)
+                    <div style="font-size:11px;color:var(--ft-rose);margin-top:3px;font-weight:600;">
+                        <i class="fas fa-arrow-up me-1"></i>{{ $currencySymbol }}{{ number_format($spent - $budget, 2) }} over
+                    </div>
+                    @else
+                    <div style="font-size:11px;color:#B45309;margin-top:3px;">
+                        {{ $currencySymbol }}{{ number_format($budget - $spent, 2) }} remaining
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
+
 {{-- ── Recent Transactions ──────────────────────────── --}}
 <div class="row g-3">
 

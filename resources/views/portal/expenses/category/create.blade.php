@@ -1,49 +1,96 @@
 @extends('layouts.portal')
 
-@section('title', 'Add Expense Category - FinTrack')
+@section('title', 'Add Expense Category — FinTrack')
 
 @section('content')
-<!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+
+<div class="page-header">
     <div>
-        <h4 class="mb-0">Add Expense Category</h4>
-        <p class="text-muted mb-0">Create a new expense category</p>
+        <h1 class="page-title">Add Expense Category</h1>
+        <p class="page-subtitle">Create a new category and optionally set a monthly spending budget</p>
     </div>
-    <a href="{{ route('expense.categories.index') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Back
-    </a>
+    <div class="page-actions">
+        <a href="{{ route('expense.categories.index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Back to Categories
+        </a>
+    </div>
 </div>
 
-<!-- Form -->
-<div class="row">
+<div class="row justify-content-center">
     <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
+        <div class="card">
+            <div class="card-body" style="padding:28px;">
                 <form method="POST" action="{{ route('expense.categories.store') }}">
                     @csrf
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Category Name *</label>
-                        <input type="text" class="form-control" id="name" name="name" required maxlength="150" placeholder="e.g., Office Supplies">
+
+                    {{-- Name --}}
+                    <div class="mb-4">
+                        <label for="name" class="form-label fw-semibold">
+                            Category Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control @error('name') is-invalid @enderror"
+                               id="name" name="name"
+                               required maxlength="150"
+                               placeholder="e.g. Marketing, Office Supplies"
+                               value="{{ old('name') }}">
                         @error('name')
-                        <div class="text-danger small mt-1">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    
+
+                    {{-- Color --}}
                     <div class="mb-4">
-                        <label for="color" class="form-label">Color</label>
-                        <div class="row g-2">
-                            <div class="col-auto">
-                                <input type="color" class="form-control form-control-color" id="color" name="color" value="#6c757d" title="Choose a color">
-                            </div>
-                            <div class="col-auto">
-                                <span class="text-muted small">Select a color for this category</span>
+                        <label class="form-label fw-semibold">Category Colour</label>
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <input type="color"
+                                   class="form-control form-control-color"
+                                   id="color" name="color"
+                                   value="{{ old('color', '#0E7490') }}"
+                                   title="Pick a colour"
+                                   style="width:46px;height:38px;padding:3px;border-radius:var(--r-sm);">
+                            <code id="colorHex" style="font-size:12px;color:var(--text-muted);">{{ old('color', '#0E7490') }}</code>
+                            {{-- Quick swatches --}}
+                            <div class="d-flex gap-2 flex-wrap">
+                                @foreach(['#0B2A4A','#0E7490','#22C55E','#F43F5E','#F59E0B','#8B5CF6','#0891B2','#6B7280'] as $sw)
+                                <button type="button"
+                                        class="color-swatch"
+                                        data-color="{{ $sw }}"
+                                        style="width:22px;height:22px;border-radius:50%;background:{{ $sw }};border:2px solid transparent;cursor:pointer;flex-shrink:0;"></button>
+                                @endforeach
                             </div>
                         </div>
                         @error('color')
-                        <div class="text-danger small mt-1">{{ $message }}</div>
+                            <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
                     </div>
-                    
+
+                    {{-- Monthly Budget --}}
+                    <div class="mb-4">
+                        <label for="monthly_budget" class="form-label fw-semibold">
+                            Monthly Budget
+                            <span class="badge bg-secondary ms-1" style="font-size:10px;font-weight:500;vertical-align:middle;">Optional</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-coins" style="color:var(--ft-amber);"></i>
+                            </span>
+                            <input type="number"
+                                   class="form-control @error('monthly_budget') is-invalid @enderror"
+                                   id="monthly_budget" name="monthly_budget"
+                                   min="0" step="0.01"
+                                   placeholder="0.00 — leave blank for no budget"
+                                   value="{{ old('monthly_budget') }}">
+                            @error('monthly_budget')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="form-text mt-1">
+                            <i class="fas fa-circle-info me-1" style="color:var(--ft-teal);"></i>
+                            Set a monthly spending limit. Progress bars and alerts appear when you're nearing or over this amount.
+                        </div>
+                    </div>
+
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-1"></i> Create Category
@@ -55,4 +102,28 @@
         </div>
     </div>
 </div>
+
+@endsection
+
+@section('scripts')
+<script>
+(function () {
+    const colorInput = document.getElementById('color');
+    const hexLabel   = document.getElementById('colorHex');
+
+    colorInput.addEventListener('input', function () {
+        hexLabel.textContent = this.value.toUpperCase();
+    });
+
+    document.querySelectorAll('.color-swatch').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const c = this.dataset.color;
+            colorInput.value     = c;
+            hexLabel.textContent = c.toUpperCase();
+            document.querySelectorAll('.color-swatch').forEach(s => s.style.borderColor = 'transparent');
+            this.style.borderColor = '#0F172A';
+        });
+    });
+})();
+</script>
 @endsection

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Income;
 use App\Models\Expense;
 use App\Models\Project;
@@ -104,9 +105,45 @@ class DashboardController extends Controller
             });
         
         // Get user's currency
-        $currencyCode = $user->currency_code ?? 'USD';
+        $currencyCode   = $user->currency_code ?? 'USD';
         $currencySymbol = CurrencyHelper::getSymbol($currencyCode);
-        
+
+        // ── Budget Alerts ─────────────────────────────────────────────────
+        // Load expense categories that have a monthly budget set
+        $budgetYear  = now()->year;
+        $budgetMonth = now()->month;
+
+        $categoriesWithBudget = Category::where('user_id', $user->id)
+            ->where('type', 'expense')
+            ->whereNotNull('monthly_budget')
+            ->where('monthly_budget', '>', 0)
+            ->get();
+
+        if ($categoriesWithBudget->isNotEmpty()) {
+            // Single query to get this-month spending per category
+            $budgetSpending = Expense::where('user_id', $user->id)
+                ->whereIn('category_id', $categoriesWithBudget->pluck('id'))
+                ->whereYear('expense_date', $budgetYear)
+                ->whereMonth('expense_date', $budgetMonth)
+                ->selectRaw('category_id, SUM(amount) as total')
+                ->groupBy('category_id')
+                ->pluck('total', 'category_id');
+
+            $categoriesWithBudget->transform(function ($cat) use ($budgetSpending) {
+                $cat->spent_this_month = (float) ($budgetSpending[$cat->id] ?? 0);
+                return $cat;
+            });
+
+            // Only surface categories at ≥ 80 % utilisation on the dashboard
+            $budgetAlerts = $categoriesWithBudget->filter(function ($cat) {
+                return ($cat->spent_this_month / $cat->monthly_budget) >= 0.80;
+            })->sortByDesc(function ($cat) {
+                return $cat->spent_this_month / $cat->monthly_budget;
+            })->values();
+        } else {
+            $budgetAlerts = collect();
+        }
+
         return view('portal.dashboard', compact(
             'totalIncome',
             'totalExpenses',
@@ -124,7 +161,8 @@ class DashboardController extends Controller
             'expenseData',
             'expensesByCategory',
             'currencyCode',
-            'currencySymbol'
+            'currencySymbol',
+            'budgetAlerts'
         ));
     }
 }

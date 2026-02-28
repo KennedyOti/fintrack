@@ -7,6 +7,7 @@ use App\Models\Expense;
 use App\Models\Project;
 use App\Models\Category;
 use App\Models\Income;
+use App\Helpers\CurrencyHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -47,7 +48,7 @@ class ExpenseController extends Controller
             ->where('type', 'expense')
             ->orderBy('name')
             ->get();
-            
+
         // Get all incomes with their spent amounts
         $incomes = Income::where('user_id', $user->id)
             ->withSum('expenses', 'amount')
@@ -56,8 +57,40 @@ class ExpenseController extends Controller
                 // Only include incomes that have not been fully spent
                 return $income->amount > ($income->expenses_sum_amount ?? 0);
             });
-            
-        return view('portal.expenses.index', compact('expenses', 'categories', 'incomes', 'search', 'category_id', 'income_id', 'date_from', 'date_to'));
+
+        // ── Budget overview for the current month ────────────────────────
+        $budgetYear  = now()->year;
+        $budgetMonth = now()->month;
+
+        $budgetCategories = Category::where('user_id', $user->id)
+            ->where('type', 'expense')
+            ->whereNotNull('monthly_budget')
+            ->where('monthly_budget', '>', 0)
+            ->get();
+
+        if ($budgetCategories->isNotEmpty()) {
+            $budgetSpending = Expense::where('user_id', $user->id)
+                ->whereIn('category_id', $budgetCategories->pluck('id'))
+                ->whereYear('expense_date', $budgetYear)
+                ->whereMonth('expense_date', $budgetMonth)
+                ->selectRaw('category_id, SUM(amount) as total')
+                ->groupBy('category_id')
+                ->pluck('total', 'category_id');
+
+            $budgetCategories->transform(function ($cat) use ($budgetSpending) {
+                $cat->spent_this_month = (float) ($budgetSpending[$cat->id] ?? 0);
+                return $cat;
+            });
+        }
+
+        $currencySymbol  = CurrencyHelper::getSymbol($user->currency_code ?? 'USD');
+        $currentMonth    = now()->format('F Y');
+
+        return view('portal.expenses.index', compact(
+            'expenses', 'categories', 'incomes',
+            'search', 'category_id', 'income_id', 'date_from', 'date_to',
+            'budgetCategories', 'currencySymbol', 'currentMonth'
+        ));
     }
 
     public function create()

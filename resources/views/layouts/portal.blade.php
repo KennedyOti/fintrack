@@ -63,6 +63,20 @@
                     </a>
                 </li>
 
+                <li>
+                    @php $sidebarUnread = Auth::user()->notifications()->where('is_read', false)->count(); @endphp
+                    <a href="{{ route('notifications.index') }}"
+                       class="nav-link {{ request()->routeIs('notifications.*') ? 'active' : '' }}">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <span>Notifications</span>
+                        @if($sidebarUnread > 0)
+                        <span class="badge ms-auto" style="background:var(--ft-rose);font-size:10px;min-width:18px;">
+                            {{ $sidebarUnread > 99 ? '99+' : $sidebarUnread }}
+                        </span>
+                        @endif
+                    </a>
+                </li>
+
                 {{-- ── Money ── --}}
                 <li class="sb-label">Money</li>
 
@@ -118,6 +132,15 @@
                        class="nav-link {{ request()->routeIs('savings.*') ? 'active' : '' }}">
                         <i class="fas fa-piggy-bank nav-icon"></i>
                         <span>Savings</span>
+                    </a>
+                </li>
+
+                {{-- Recurring --}}
+                <li>
+                    <a href="{{ route('recurring.index') }}"
+                       class="nav-link {{ request()->routeIs('recurring.*') ? 'active' : '' }}">
+                        <i class="fas fa-sync-alt nav-icon"></i>
+                        <span>Recurring</span>
                     </a>
                 </li>
 
@@ -242,26 +265,76 @@
             <div class="topnav-actions">
 
                 {{-- Notification Bell --}}
+                @php
+                    $navNotifs     = Auth::user()->notifications()->where('is_read', false)->latest()->take(6)->get();
+                    $navUnreadCount = Auth::user()->notifications()->where('is_read', false)->count();
+                @endphp
                 <div class="dropdown">
-                    <button class="topnav-btn" data-bs-toggle="dropdown" aria-label="Notifications">
+                    <button class="topnav-btn position-relative" id="notifBellBtn"
+                            data-bs-toggle="dropdown" aria-label="Notifications"
+                            data-bs-auto-close="outside">
                         <i class="fas fa-bell"></i>
-                        <span class="topnav-dot"></span>
+                        @if($navUnreadCount > 0)
+                        <span class="notif-badge">{{ $navUnreadCount > 99 ? '99+' : $navUnreadCount }}</span>
+                        @endif
                     </button>
-                    <div class="dropdown-menu dropdown-menu-end" style="width:270px;">
-                        <div class="dropdown-header">Notifications</div>
-                        <a href="{{ route('invoices.index') }}" class="dropdown-item">
-                            <i class="fas fa-file-invoice" style="color:var(--ft-amber);"></i>
-                            <span>Invoice #INV-001 is overdue</span>
-                        </a>
-                        <a href="{{ route('invoices.index') }}" class="dropdown-item">
-                            <i class="fas fa-circle-check" style="color:#059669;"></i>
-                            <span>Payment received from client</span>
-                        </a>
-                        <hr class="dropdown-divider">
-                        <a href="#" class="dropdown-item justify-content-center"
-                           style="font-size:12px;color:var(--ft-teal);">
-                            View all notifications
-                        </a>
+                    <div class="dropdown-menu dropdown-menu-end notif-dropdown p-0" style="width:320px;">
+                        {{-- Header --}}
+                        <div class="notif-dd-header">
+                            <span>Notifications</span>
+                            <div class="d-flex align-items-center gap-2">
+                                @if($navUnreadCount > 0)
+                                <button class="btn btn-xs notif-mark-all-btn" id="markAllReadBtn"
+                                        title="Mark all as read">
+                                    <i class="fas fa-check-double me-1"></i>Mark all read
+                                </button>
+                                @endif
+                                <a href="{{ route('notifications.index') }}"
+                                   class="btn btn-xs notif-settings-btn" title="All notifications">
+                                    <i class="fas fa-arrow-up-right-from-square"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {{-- List --}}
+                        <div class="notif-dd-list" id="notifList">
+                            @forelse($navNotifs as $notif)
+                            <a href="{{ $notif->getLink() }}"
+                               class="notif-dd-item {{ $notif->is_read ? '' : 'unread' }}"
+                               data-id="{{ $notif->id }}"
+                               data-read="{{ $notif->is_read ? 'true' : 'false' }}">
+                                <div class="notif-dd-icon" style="background:{{ $notif->getIconBg() }};">
+                                    <i class="{{ $notif->getIcon() }}" style="color:{{ $notif->getIconColor() }};"></i>
+                                </div>
+                                <div class="notif-dd-body">
+                                    <div class="notif-dd-title">{{ $notif->title }}</div>
+                                    <div class="notif-dd-msg">{{ Str::limit($notif->message, 72) }}</div>
+                                    <div class="notif-dd-time">{{ $notif->created_at->diffForHumans() }}</div>
+                                </div>
+                                <button class="notif-dismiss-btn" title="Dismiss"
+                                        data-dismiss-id="{{ $notif->id }}"
+                                        onclick="event.preventDefault(); dismissNotif(this);">
+                                    <i class="fas fa-xmark"></i>
+                                </button>
+                            </a>
+                            @empty
+                            <div class="notif-empty">
+                                <i class="fas fa-bell-slash"></i>
+                                <p>You're all caught up!</p>
+                                <span>No new notifications</span>
+                            </div>
+                            @endforelse
+                        </div>
+                        {{-- Footer --}}
+                        <div class="notif-dd-footer">
+                            <a href="{{ route('notifications.index') }}" class="notif-view-all">
+                                View all notifications
+                                @if($navUnreadCount > 6)
+                                <span class="badge rounded-pill ms-1" style="background:var(--ft-teal);font-size:10px;">
+                                    +{{ $navUnreadCount - 6 }} more
+                                </span>
+                                @endif
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -356,6 +429,82 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Portal JS -->
 <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+
+<script>
+// ─── Notification Bell Interactions ──────────────────────────────────────────
+(function () {
+    const MARK_ALL_URL  = '{{ route('notifications.markAllRead') }}';
+    const CSRF          = '{{ csrf_token() }}';
+
+    // Mark item as read when clicked (before navigating)
+    document.querySelectorAll('.notif-dd-item[data-id]').forEach(function (el) {
+        el.addEventListener('click', function () {
+            if (el.dataset.read === 'false') {
+                fetch('/notifications/' + el.dataset.id + '/read', {
+                    method:  'PATCH',
+                    headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+                }).catch(function () {});
+                el.classList.remove('unread');
+                el.dataset.read = 'true';
+                refreshBadge(-1);
+            }
+        });
+    });
+
+    // Mark all read
+    var markAllBtn = document.getElementById('markAllReadBtn');
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            fetch(MARK_ALL_URL, {
+                method:  'POST',
+                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+            }).then(function () {
+                document.querySelectorAll('.notif-dd-item.unread').forEach(function (el) {
+                    el.classList.remove('unread');
+                    el.dataset.read = 'true';
+                });
+                refreshBadge(0, true);
+                markAllBtn.closest('.d-flex') && markAllBtn.remove();
+            }).catch(function () {});
+        });
+    }
+
+    // Dismiss (delete) a notification
+    window.dismissNotif = function (btn) {
+        var id = btn.dataset.dismissId;
+        fetch('/notifications/' + id, {
+            method:  'DELETE',
+            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+        }).then(function () {
+            var item = btn.closest('.notif-dd-item');
+            if (item) {
+                if (!item.classList.contains('unread') === false) refreshBadge(-1);
+                item.style.transition = 'opacity .2s';
+                item.style.opacity    = '0';
+                setTimeout(function () { item.remove(); }, 220);
+            }
+        }).catch(function () {});
+    };
+
+    // Update badge counter
+    function refreshBadge(delta, clear) {
+        var badge = document.querySelector('.notif-badge');
+        if (clear) {
+            if (badge) badge.remove();
+            return;
+        }
+        if (!badge) return;
+        var current = parseInt(badge.textContent) || 0;
+        var next    = Math.max(0, current + delta);
+        if (next === 0) {
+            badge.remove();
+        } else {
+            badge.textContent = next > 99 ? '99+' : next;
+        }
+    }
+})();
+</script>
 
 @yield('scripts')
 </body>

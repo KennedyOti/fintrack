@@ -36,8 +36,13 @@
     <i class="fas fa-times-circle me-2"></i> This quote has been rejected.
 </div>
 @elseif($quote->status == 'converted')
-<div class="alert alert-info">
-    <i class="fas fa-file-invoice me-2"></i> This quote has been converted to an invoice.
+<div class="alert alert-info d-flex align-items-center justify-content-between">
+    <span><i class="fas fa-file-invoice me-2"></i> This quote has been converted to an invoice.</span>
+    @if($quote->invoices->count())
+    <a href="{{ route('invoices.show', $quote->invoices->first()) }}" class="btn btn-sm btn-info text-white ms-3">
+        <i class="fas fa-external-link-alt me-1"></i> View Invoice
+    </a>
+    @endif
 </div>
 @endif
 
@@ -190,63 +195,41 @@
                         <i class="fas fa-file-pdf me-2"></i> Download PDF
                     </a>
                     @if($quote->status == 'draft')
-                    <form action="{{ route('quotes.update', $quote->id) }}" method="POST">
+                    <form action="{{ route('quotes.status', $quote->id) }}" method="POST">
                         @csrf
-                        @method('PUT')
-                        <input type="hidden" name="client_id" value="{{ $quote->client_id }}">
-                        <input type="hidden" name="project_id" value="{{ $quote->project_id }}">
-                        <input type="hidden" name="issue_date" value="{{ $quote->issue_date->format('Y-m-d') }}">
-                        <input type="hidden" name="valid_until" value="{{ $quote->valid_until->format('Y-m-d') }}">
-                        <input type="hidden" name="subtotal" value="{{ $quote->subtotal }}">
-                        <input type="hidden" name="tax_amount" value="{{ $quote->tax_amount }}">
-                        <input type="hidden" name="discount_amount" value="{{ $quote->discount_amount }}">
-                        <input type="hidden" name="total_amount" value="{{ $quote->total_amount }}">
+                        @method('PATCH')
                         <input type="hidden" name="status" value="sent">
-                        <input type="hidden" name="notes" value="{{ $quote->notes }}">
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="fas fa-paper-plane me-2"></i> Mark as Sent
                         </button>
                     </form>
                     @endif
                     @if($quote->status == 'sent')
-                    <form action="{{ route('quotes.update', $quote->id) }}" method="POST" class="d-inline">
+                    <form action="{{ route('quotes.status', $quote->id) }}" method="POST">
                         @csrf
-                        @method('PUT')
-                        <input type="hidden" name="client_id" value="{{ $quote->client_id }}">
-                        <input type="hidden" name="project_id" value="{{ $quote->project_id }}">
-                        <input type="hidden" name="issue_date" value="{{ $quote->issue_date->format('Y-m-d') }}">
-                        <input type="hidden" name="valid_until" value="{{ $quote->valid_until->format('Y-m-d') }}">
-                        <input type="hidden" name="subtotal" value="{{ $quote->subtotal }}">
-                        <input type="hidden" name="tax_amount" value="{{ $quote->tax_amount }}">
-                        <input type="hidden" name="discount_amount" value="{{ $quote->discount_amount }}">
-                        <input type="hidden" name="total_amount" value="{{ $quote->total_amount }}">
+                        @method('PATCH')
                         <input type="hidden" name="status" value="accepted">
-                        <input type="hidden" name="notes" value="{{ $quote->notes }}">
                         <button type="submit" class="btn btn-success w-100 mb-2">
                             <i class="fas fa-check me-2"></i> Mark as Accepted
                         </button>
                     </form>
-                    <form action="{{ route('quotes.update', $quote->id) }}" method="POST" class="d-inline">
+                    <form action="{{ route('quotes.status', $quote->id) }}" method="POST">
                         @csrf
-                        @method('PUT')
-                        <input type="hidden" name="client_id" value="{{ $quote->client_id }}">
-                        <input type="hidden" name="project_id" value="{{ $quote->project_id }}">
-                        <input type="hidden" name="issue_date" value="{{ $quote->issue_date->format('Y-m-d') }}">
-                        <input type="hidden" name="valid_until" value="{{ $quote->valid_until->format('Y-m-d') }}">
-                        <input type="hidden" name="subtotal" value="{{ $quote->subtotal }}">
-                        <input type="hidden" name="tax_amount" value="{{ $quote->tax_amount }}">
-                        <input type="hidden" name="discount_amount" value="{{ $quote->discount_amount }}">
-                        <input type="hidden" name="total_amount" value="{{ $quote->total_amount }}">
+                        @method('PATCH')
                         <input type="hidden" name="status" value="rejected">
-                        <input type="hidden" name="notes" value="{{ $quote->notes }}">
                         <button type="submit" class="btn btn-danger w-100">
                             <i class="fas fa-times me-2"></i> Mark as Rejected
                         </button>
                     </form>
                     @endif
                     @if($quote->status == 'accepted' && !$quote->invoices->count())
-                    <a href="{{ route('invoices.create') }}?quote_id={{ $quote->id }}" class="btn btn-outline-primary">
+                    <a href="{{ route('quotes.convert', $quote) }}" class="btn btn-success w-100">
                         <i class="fas fa-file-invoice me-2"></i> Convert to Invoice
+                    </a>
+                    @endif
+                    @if($quote->status == 'converted' && $quote->invoices->count())
+                    <a href="{{ route('invoices.show', $quote->invoices->first()) }}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-file-invoice me-2"></i> View Invoice
                     </a>
                     @endif
                 </div>

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan route:list --path=notifications)",
+      "Bash(php artisan cache:clear)",
+      "Bash(php artisan view:clear)",
+      "Bash(php artisan tinker --execute=\"echo \\\\Illuminate\\\\Support\\\\Str::limit\\(''test message'', 72\\);\")"
+    ]
+  }
+}

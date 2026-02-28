@@ -216,6 +216,77 @@ class QuoteController extends Controller
         return $pdf->download('quote-' . $quote->quote_number . '.pdf');
     }
 
+    public function convertToInvoice(Quote $quote)
+    {
+        $this->authorizeQuote($quote);
+
+        if ($quote->status !== 'accepted') {
+            abort(403, 'Only accepted quotes can be converted to invoices.');
+        }
+
+        if ($quote->invoices()->count() > 0) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('error', 'This quote has already been converted to an invoice.');
+        }
+
+        $quote->load(['items', 'client', 'project']);
+
+        $user = Auth::user();
+
+        $clients = Client::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        $projects = Project::where('user_id', $user->id)
+            ->whereIn('status', ['planned', 'in_progress'])
+            ->orderBy('title')
+            ->get();
+
+        $currencySymbol = CurrencyHelper::getSymbol($user->currency_code ?? 'USD');
+
+        // Pass an empty quotes collection — not needed on the conversion form
+        $quotes = collect();
+
+        $fromQuoteItems = $quote->items->map(fn($i) => [
+            'description' => $i->description,
+            'quantity'    => (float) $i->quantity,
+            'unit_price'  => (float) $i->unit_price,
+            'total'       => (float) $i->total,
+        ])->values()->all();
+
+        return view('portal.invoices.create', compact(
+            'clients',
+            'projects',
+            'quotes',
+            'currencySymbol',
+            'fromQuoteItems'
+        ))->with('fromQuote', $quote);
+    }
+
+    public function updateStatus(Request $request, Quote $quote)
+    {
+        $this->authorizeQuote($quote);
+
+        $validated = $request->validate([
+            'status' => 'required|in:draft,sent,accepted,rejected,expired,converted',
+        ]);
+
+        $quote->update(['status' => $validated['status']]);
+
+        $labels = [
+            'sent'     => 'marked as sent',
+            'accepted' => 'marked as accepted',
+            'rejected' => 'marked as rejected',
+            'draft'    => 'reverted to draft',
+            'expired'  => 'marked as expired',
+        ];
+
+        $message = 'Quote ' . ($labels[$validated['status']] ?? 'updated') . ' successfully.';
+
+        return redirect()->route('quotes.show', $quote)->with('success', $message);
+    }
+
     private function authorizeQuote($quote)
     {
         if ($quote->user_id !== Auth::id()) {

@@ -111,6 +111,11 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class);
     }
 
+    public function notificationSettings(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(NotificationSetting::class);
+    }
+
     // Helper methods
     public function totalIncome()
     {

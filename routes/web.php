@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Portal\DashboardController;
+use App\Http\Controllers\Portal\RecurringTransactionController;
 use App\Http\Controllers\Portal\ClientController;
 use App\Http\Controllers\Portal\IncomeController;
 use App\Http\Controllers\Portal\IncomeCategoryController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Portal\SavingsController;
 use App\Http\Controllers\Portal\DebtController;
 use App\Http\Controllers\Portal\FinanceController;
 use App\Http\Controllers\Portal\SettingsController;
+use App\Http\Controllers\Portal\NotificationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +65,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Quotes
     Route::resource('quotes', QuoteController::class);
     Route::get('quotes/{quote}/pdf', [QuoteController::class, 'downloadPdf'])->name('quotes.pdf');
+    Route::patch('quotes/{quote}/status', [QuoteController::class, 'updateStatus'])->name('quotes.status');
+    Route::get('quotes/{quote}/convert', [QuoteController::class, 'convertToInvoice'])->name('quotes.convert');
     
     // Savings
     Route::resource('savings', SavingsController::class);
@@ -88,13 +92,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/debts/payable/{debt}', [DebtController::class, 'updatePayable'])->name('debts.payable.update');
     Route::delete('/debts/payable/{debt}', [DebtController::class, 'destroyPayable'])->name('debts.payable.destroy');
     
+    // Recurring Transactions
+    Route::resource('recurring', RecurringTransactionController::class);
+    Route::patch('recurring/{recurring}/toggle', [RecurringTransactionController::class, 'toggle'])->name('recurring.toggle');
+    Route::post('recurring/{recurring}/generate-now', [RecurringTransactionController::class, 'generateNow'])->name('recurring.generateNow');
+
     // Finances
     Route::get('/finances', [FinanceController::class, 'index'])->name('finances.index');
     
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/generate-now', [NotificationController::class, 'generateNow'])->name('notifications.generateNow');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
+    Route::delete('/notifications/clear/read', [NotificationController::class, 'destroyRead'])->name('notifications.destroyRead');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.markRead');
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+
     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
     Route::post('/settings/currency', [SettingsController::class, 'updateCurrency'])->name('settings.currency.update');
+    Route::put('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications.update');
     
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

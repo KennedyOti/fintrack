@@ -80,8 +80,10 @@ body {
     z-index: 1040;
     display: flex;
     flex-direction: column;
-    transition: transform var(--t);
-    overflow: hidden;
+    /* width included for desktop collapse animation */
+    transition: transform var(--t), width var(--t);
+    /* No overflow:hidden — footer dropdown must be able to extend beyond sidebar width */
+    overflow: visible;
 }
 
 /* Gradient overlay for depth */
@@ -1053,3 +1055,434 @@ body {
 
 /* Invoices table: prevent unwanted overflow */
 .invoices-table .table-responsive { overflow-x: auto; }
+
+/* ═══════════════════════════════════════════════════════
+   DESKTOP SIDEBAR COLLAPSE
+   Activated by adding .collapsed to #sidebar (JS toggles it).
+   Only affects ≥992px — mobile uses .open overlay instead.
+═══════════════════════════════════════════════════════ */
+:root { --sb-collapsed-w: 62px; }
+
+@media (min-width: 992px) {
+
+    /* ── Narrow sidebar ─────────────────────────────── */
+    .sidebar.collapsed {
+        width: var(--sb-collapsed-w);
+    }
+
+    /* ── Main content shifts left with sidebar via CSS sibling selector.
+          No JS class-add needed — pure CSS. ────────── */
+    .sidebar.collapsed ~ .main-content {
+        margin-left: var(--sb-collapsed-w);
+    }
+
+    /* ── Brand: show wallet icon only, centred ──────── */
+    .sidebar.collapsed .sidebar-brand {
+        justify-content: center;
+        padding: 0;
+        gap: 0;
+    }
+    .sidebar.collapsed .sidebar-brand-name { display: none; }
+
+    /* ── Section labels: hide ───────────────────────── */
+    .sidebar.collapsed .sb-label { display: none; }
+
+    /* ── Nav links: icon centred, no text/chevron ───── */
+    .sidebar.collapsed .sidebar-menu .nav-link {
+        justify-content: center;
+        padding: 11px 0;
+        gap: 0;
+        border-left-color: transparent;
+        position: relative; /* for ::after active indicator */
+    }
+
+    .sidebar.collapsed .sidebar-menu .nav-link span,
+    .sidebar.collapsed .sidebar-menu .nav-link .nav-chevron {
+        display: none;
+    }
+
+    .sidebar.collapsed .sidebar-menu .nav-link .nav-icon {
+        width: auto;
+        font-size: 15px;
+    }
+
+    /* ── Hover: subtle glow instead of left-border ──── */
+    .sidebar.collapsed .sidebar-menu .nav-link:hover {
+        border-left-color: transparent;
+        background: rgba(34,211,238,.09);
+    }
+
+    /* ── Active: background + right cyan pill ───────── */
+    .sidebar.collapsed .sidebar-menu .nav-link.active {
+        background: rgba(34,211,238,.15);
+        border-left-color: transparent;
+    }
+    .sidebar.collapsed .sidebar-menu .nav-link.active::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 20px;
+        background: var(--ft-cyan);
+        border-radius: 3px 0 0 3px;
+    }
+
+    /* ── Submenus: hidden (Bootstrap collapse + direct) */
+    .sidebar.collapsed .sidebar-submenu,
+    .sidebar.collapsed .collapse { display: none !important; }
+
+    /* ── Footer: avatar centred ─────────────────────── */
+    .sidebar.collapsed .sidebar-footer {
+        padding: 10px 8px;
+        display: flex;
+        justify-content: center;
+    }
+    .sidebar.collapsed .sidebar-user {
+        justify-content: center;
+        padding: 7px;
+        width: auto;
+    }
+    /* Hide name/role div and the ellipsis icon */
+    .sidebar.collapsed .sidebar-user > *:not(.sidebar-user-avatar) {
+        display: none;
+    }
+
+    /* ── Collapsed toggle button: subtle active state ── */
+    .sidebar.collapsed ~ .main-content .sidebar-toggle {
+        background: rgba(11,42,74,.06);
+        color: var(--ft-navy);
+    }
+
+} /* end @media ≥992px */
+
+/* ── Sidebar tooltip (Bootstrap, right-side, custom look) ── */
+.ft-sidebar-tooltip .tooltip-inner {
+    background: #0F172A;
+    color: #fff;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: var(--r-sm);
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
+}
+.ft-sidebar-tooltip.bs-tooltip-end .tooltip-arrow::before {
+    border-right-color: #0F172A;
+}
+
+/* ═══════════════════════════════════════════════════════
+   NOTIFICATIONS — Navbar Dropdown
+═══════════════════════════════════════════════════════ */
+
+/* Red pill badge on the bell icon */
+.notif-badge {
+    position: absolute;
+    top: 4px; right: 4px;
+    min-width: 16px; height: 16px;
+    background: var(--ft-rose);
+    color: #fff;
+    border-radius: 99px;
+    font-size: 9.5px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 3.5px;
+    line-height: 1;
+    pointer-events: none;
+    border: 2px solid var(--bg-card);
+}
+
+/* Dropdown container */
+.notif-dropdown {
+    border: none;
+    box-shadow: 0 8px 32px rgba(15,30,60,.16);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    padding: 0 !important;
+    min-width: 320px;
+}
+
+/* Dropdown header */
+.notif-dd-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-page);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-h);
+    gap: 8px;
+}
+
+.notif-mark-all-btn {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+    color: var(--ft-teal) !important;
+    border-color: var(--ft-teal) !important;
+    background: transparent !important;
+}
+.notif-mark-all-btn:hover {
+    background: var(--ft-teal) !important;
+    color: #fff !important;
+}
+
+.notif-settings-btn {
+    font-size: 11px !important;
+    padding: 3px 7px !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border) !important;
+    background: transparent !important;
+}
+.notif-settings-btn:hover {
+    background: var(--bg-page) !important;
+    color: var(--text-h) !important;
+}
+
+/* Scrollable notification list */
+.notif-dd-list {
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+/* Individual notification item */
+.notif-dd-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border-light);
+    text-decoration: none;
+    color: inherit;
+    transition: background var(--t);
+    position: relative;
+}
+.notif-dd-item:last-child { border-bottom: none; }
+.notif-dd-item:hover { background: var(--bg-page); color: inherit; }
+.notif-dd-item.unread {
+    background: rgba(14,116,144,.04);
+    border-left: 3px solid var(--ft-teal);
+}
+.notif-dd-item.unread:hover { background: rgba(14,116,144,.07); }
+
+/* Icon bubble inside item */
+.notif-dd-icon {
+    width: 34px; height: 34px;
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+}
+
+/* Text content area */
+.notif-dd-body  { flex: 1; min-width: 0; }
+.notif-dd-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-h);
+    margin-bottom: 2px;
+    line-height: 1.3;
+}
+.notif-dd-msg {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin-bottom: 3px;
+}
+.notif-dd-time {
+    font-size: 10.5px;
+    color: var(--text-faint);
+}
+
+/* Dismiss (×) button on each item */
+.notif-dismiss-btn {
+    width: 20px; height: 20px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    color: var(--text-faint);
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all var(--t);
+    opacity: 0;
+}
+.notif-dd-item:hover .notif-dismiss-btn { opacity: 1; }
+.notif-dismiss-btn:hover {
+    background: var(--ft-rose);
+    color: #fff;
+}
+
+/* Empty state */
+.notif-empty {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--text-faint);
+}
+.notif-empty i     { font-size: 32px; opacity: .3; display: block; margin-bottom: 10px; }
+.notif-empty p     { font-size: 13.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px; }
+.notif-empty span  { font-size: 12px; }
+
+/* Footer link */
+.notif-dd-footer {
+    border-top: 1px solid var(--border);
+    padding: 9px 14px;
+    background: var(--bg-page);
+}
+.notif-view-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ft-teal);
+    text-decoration: none;
+    transition: color var(--t);
+}
+.notif-view-all:hover { color: var(--ft-navy); }
+
+/* ═══════════════════════════════════════════════════════
+   NOTIFICATIONS — Index Page Rows
+═══════════════════════════════════════════════════════ */
+.notif-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    transition: background var(--t);
+}
+.notif-row:last-child { border-bottom: none; }
+.notif-row:hover      { background: var(--bg-page); }
+.notif-row.unread {
+    background: rgba(14,116,144,.04);
+    border-left: 3px solid var(--ft-teal);
+}
+.notif-row.unread:hover { background: rgba(14,116,144,.07); }
+
+.notif-row-icon {
+    width: 44px; height: 44px;
+    border-radius: var(--r-md);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+.notif-row-content { flex: 1; min-width: 0; }
+.notif-row-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-h);
+}
+.notif-row-msg {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.55;
+}
+.notif-row-time {
+    font-size: 12px;
+    color: var(--text-faint);
+}
+
+.notif-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.notif-type-badge {
+    font-size: 10.5px !important;
+    font-weight: 600;
+    padding: 2px 7px !important;
+    border-radius: 99px !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   NOTIFICATION SETTINGS TABLE
+═══════════════════════════════════════════════════════ */
+.notif-settings-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background: var(--bg-page);
+    border-bottom: 1px solid var(--border);
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    gap: 12px;
+}
+
+.notif-settings-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    transition: background var(--t);
+}
+.notif-settings-row:hover { background: rgba(241,245,249,.6); }
+
+.notif-settings-header .notif-settings-label,
+.notif-settings-row    .notif-settings-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.notif-settings-header .notif-settings-col,
+.notif-settings-row    .notif-settings-col {
+    width: 90px;
+    flex-shrink: 0;
+}
+
+.notif-settings-icon {
+    width: 38px; height: 38px;
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 15px;
+}
+
+.notif-settings-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-h);
+    margin-bottom: 2px;
+}
+
+.notif-settings-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.notif-days-input {
+    width: auto;
+    display: inline-flex !important;
+}
+.notif-days-input .form-control { border-radius: 6px 0 0 6px !important; }
+.notif-days-input .input-group-text {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg-page);
+    border-color: var(--border);
+    white-space: nowrap;
+}
+
+/* Toggle switch — teal when checked */
+.form-check-input:checked {
+    background-color: var(--ft-teal) !important;
+    border-color: var(--ft-teal) !important;
+}
+.form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(14,116,144,.2) !important;
+}

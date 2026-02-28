@@ -147,6 +147,14 @@ class InvoiceController extends Controller
 
                 // Auto-create the receivable for sent / partial / overdue invoices
                 $this->syncDebtsReceivable($invoice, $validated['status']);
+
+                // If this invoice was converted from a quote, mark the quote as converted
+                if (!empty($validated['quote_id'])) {
+                    Quote::where('id', $validated['quote_id'])
+                        ->where('user_id', Auth::id())
+                        ->update(['status' => 'converted']);
+                }
+
                 Log::info('Transaction completed successfully');
             });
             
