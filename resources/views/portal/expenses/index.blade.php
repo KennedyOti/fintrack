@@ -273,12 +273,14 @@
 
         {{-- ── Pagination footer ────────────────────────── --}}
         @if($expenses->hasPages())
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 20px;border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 20px;border-top:1px solid var(--border);">
             <span style="font-size:12.5px;color:var(--text-muted);">
                 Showing <strong style="color:var(--text-h);">{{ $expenses->firstItem() }}</strong>–<strong style="color:var(--text-h);">{{ $expenses->lastItem() }}</strong>
                 of <strong style="color:var(--text-h);">{{ $expenses->total() }}</strong> expenses
             </span>
-            {{ $expenses->links() }}
+            <div class="d-flex align-items-center">
+                {{ $expenses->links() }}
+            </div>
         </div>
         @endif
         @else
