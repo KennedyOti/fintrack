@@ -43,7 +43,8 @@ class ExpenseController extends Controller
                 return $query->whereDate('expense_date', '<=', $date_to);
             })
             ->latest()
-            ->paginate(10);
+            ->paginate(15)
+            ->withQueryString();
 
         $categories = Category::where('user_id', $user->id)
             ->where('type', 'expense')
