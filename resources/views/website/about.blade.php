@@ -69,7 +69,7 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                     @php
                     $pillars = [
-                        ['fa-shield-halved',      'var(--cyan)',    'Transparency',  'See every shilling — where it came from, where it went, and what's still outstanding.'],
+                        ['fa-shield-halved',      'var(--cyan)',    'Transparency',  'See every shilling — where it came from, where it went, and what\'s still outstanding.'],
                         ['fa-bolt',               'var(--emerald)', 'Efficiency',    'Save hours every month on invoicing, expense tracking, and financial reporting.'],
                         ['fa-chart-line-up',      'var(--violet)',  'Growth',        'Make informed decisions about pricing, clients, and savings based on real data.'],
                         ['fa-lock',               'var(--amber)',   'Security',      'Your financial data is private, secure, and accessible only to you.'],
