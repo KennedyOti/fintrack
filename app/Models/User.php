@@ -29,6 +29,11 @@ class User extends Authenticatable
         'last_login_at',
         'google_id',
         'google_avatar',
+        'otp_code',
+        'otp_expires_at',
+        'otp_attempts',
+        'two_factor_enabled',
+        'dark_mode',
     ];
 
     protected $hidden = [
@@ -42,6 +47,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'last_login_at' => 'datetime',
+            'otp_expires_at' => 'datetime',
+            'two_factor_enabled' => 'boolean',
+            'dark_mode' => 'boolean',
         ];
     }
 
@@ -114,6 +122,28 @@ class User extends Authenticatable
     public function notificationSettings(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(NotificationSetting::class);
+    }
+
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    // ── Role / Status Helpers ────────────────────────────────────────────────
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended';
     }
 
     // Helper methods

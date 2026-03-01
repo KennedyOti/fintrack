@@ -16,7 +16,7 @@
         <div class="auth-card-body">
             <!-- Session Status -->
             @if (session('status'))
-            <div class="alert alert-success mb-4" style="padding: 12px 16px; border-radius: 8px; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); color: var(--ft-emerald); font-size: 14px;">
+            <div class="alert alert-success mb-3">
                 {{ session('status') }}
             </div>
             @endif

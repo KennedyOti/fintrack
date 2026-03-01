@@ -144,6 +144,12 @@ class DashboardController extends Controller
             $budgetAlerts = collect();
         }
 
+        // ── Onboarding Checklist ──────────────────────────────────────────
+        $onboardingCurrencySet = !empty($user->currency_code);
+        $onboardingHasClient   = $totalClients > 0;
+        $onboardingHasInvoice  = Invoice::where('user_id', $user->id)->exists();
+        $showOnboarding = !($onboardingCurrencySet && $onboardingHasClient && $onboardingHasInvoice);
+
         return view('portal.dashboard', compact(
             'totalIncome',
             'totalExpenses',
@@ -162,7 +168,11 @@ class DashboardController extends Controller
             'expensesByCategory',
             'currencyCode',
             'currencySymbol',
-            'budgetAlerts'
+            'budgetAlerts',
+            'showOnboarding',
+            'onboardingCurrencySet',
+            'onboardingHasClient',
+            'onboardingHasInvoice'
         ));
     }
 }

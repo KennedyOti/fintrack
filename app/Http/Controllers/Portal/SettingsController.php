@@ -97,6 +97,17 @@ class SettingsController extends Controller
     }
 
     /**
+     * Toggle dark mode preference (AJAX).
+     */
+    public function updateDarkMode(Request $request)
+    {
+        $user = Auth::user();
+        $user->update(['dark_mode' => $request->boolean('dark_mode')]);
+
+        return response()->json(['success' => true, 'dark_mode' => (bool) $user->dark_mode]);
+    }
+
+    /**
      * Update notification preferences.
      */
     public function updateNotifications(Request $request)

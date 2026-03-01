@@ -15,7 +15,15 @@ use App\Http\Controllers\Portal\DebtController;
 use App\Http\Controllers\Portal\FinanceController;
 use App\Http\Controllers\Portal\SettingsController;
 use App\Http\Controllers\Portal\NotificationController;
+use App\Http\Controllers\Portal\ExportController;
 use App\Http\Controllers\Portal\ClientViewController;
+use App\Http\Controllers\Portal\QuickAddController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\SystemSettingController;
+use App\Http\Controllers\AboutController;
+use App\Http\Controllers\HowItWorksController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +31,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('website.home');
 })->name('home');
+
+Route::get('/about',        [AboutController::class,      'index'])->name('about');
+Route::get('/how-it-works', [HowItWorksController::class, 'index'])->name('how-it-works');
 
 // ── Shareable Client Links (no auth required) ──────────────────────────────
 Route::prefix('view')->name('public.')->group(function () {
@@ -131,11 +142,47 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
     Route::post('/settings/currency', [SettingsController::class, 'updateCurrency'])->name('settings.currency.update');
     Route::put('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications.update');
+    Route::post('/settings/dark-mode', [SettingsController::class, 'updateDarkMode'])->name('settings.darkMode');
+
+    // Quick Add (income/expense from global modal)
+    Route::post('/quick-add/income', [QuickAddController::class, 'storeIncome'])->name('quick-add.income');
+    Route::post('/quick-add/expense', [QuickAddController::class, 'storeExpense'])->name('quick-add.expense');
     
+    // Data Export
+    Route::get('/export', [ExportController::class, 'index'])->name('export.index');
+    Route::post('/export/download', [ExportController::class, 'download'])->name('export.download');
+
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// ── Admin Routes ────────────────────────────────────────────────────────────
+// Protected by auth + email verification + admin role check
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'role:admin'])->group(function () {
+
+    // Admin Dashboard
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // User Management
+    Route::get('/users',                               [UserManagementController::class, 'index'])->name('users.index');
+    Route::get('/users/{id}',                          [UserManagementController::class, 'show'])->name('users.show');
+    Route::get('/users/{id}/edit',                     [UserManagementController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{id}',                          [UserManagementController::class, 'update'])->name('users.update');
+    Route::patch('/users/{id}/toggle-status',          [UserManagementController::class, 'toggleStatus'])->name('users.toggleStatus');
+    Route::delete('/users/{id}',                       [UserManagementController::class, 'destroy'])->name('users.destroy');
+    Route::post('/users/{id}/restore',                 [UserManagementController::class, 'restore'])->name('users.restore');
+    Route::post('/users/{id}/reset-password',          [UserManagementController::class, 'resetPassword'])->name('users.resetPassword');
+
+    // Activity Logs
+    Route::get('/activity-logs',                       [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::delete('/activity-logs',                    [ActivityLogController::class, 'clearOld'])->name('activity-logs.clearOld');
+
+    // System Settings
+    Route::get('/settings',                            [SystemSettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings',                           [SystemSettingController::class, 'update'])->name('settings.update');
+
 });
 
 require __DIR__.'/auth.php';

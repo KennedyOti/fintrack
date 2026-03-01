@@ -209,4 +209,54 @@ document.addEventListener('DOMContentLoaded', function () {
         Chart.defaults.color = '#64748B';
     }
 
+    // ─────────────────────────────────────────────────────
+    //  DARK MODE TOGGLE
+    //  • Reads/writes localStorage key 'ft_dark_mode'
+    //  • Syncs to server via PATCH /settings/dark-mode
+    //  • Inline <script> in <head> handles FOUC prevention
+    // ─────────────────────────────────────────────────────
+    var darkToggle = document.getElementById('darkModeToggle');
+    var darkIcon   = document.getElementById('darkModeIcon');
+    var DARK_URL   = '/settings/dark-mode';
+    var CSRF_TOKEN = (document.querySelector('meta[name="csrf-token"]') || {}).getAttribute
+        ? document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        : '';
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('ft_dark_mode', theme);
+        if (darkIcon) {
+            darkIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+    }
+
+    // Sync icon to current theme on load
+    (function () {
+        var current = document.documentElement.getAttribute('data-theme') || 'light';
+        if (darkIcon) {
+            darkIcon.className = current === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+    })();
+
+    if (darkToggle) {
+        darkToggle.addEventListener('click', function () {
+            var current = document.documentElement.getAttribute('data-theme') || 'light';
+            var next    = current === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+
+            // Persist to server (fire-and-forget)
+            if (CSRF_TOKEN) {
+                fetch(DARK_URL, {
+                    method:  'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF_TOKEN,
+                        'Accept':       'application/json',
+                    },
+                    body: JSON.stringify({ dark_mode: next === 'dark' }),
+                }).catch(function () {});
+            }
+        });
+    }
+
 });

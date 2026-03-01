@@ -4,6 +4,103 @@
 
 @section('content')
 
+{{-- ── Onboarding Checklist ───────────────────────────── --}}
+@if($showOnboarding)
+<div class="onboarding-card mb-4" id="onboardingCard">
+    <button class="onboarding-dismiss" id="onboardingDismiss" title="Dismiss">
+        <i class="fas fa-xmark"></i>
+    </button>
+    <div class="onboarding-header">
+        <div class="onboarding-icon">
+            <i class="fas fa-rocket"></i>
+        </div>
+        <div>
+            <div class="onboarding-title">Get started with FinTrack</div>
+            <div class="onboarding-subtitle">
+                Complete these steps to unlock the full potential of your financial dashboard.
+            </div>
+        </div>
+        <div class="onboarding-progress-wrap ms-auto d-none d-sm-flex">
+            @php $doneCount = ($onboardingCurrencySet ? 1 : 0) + ($onboardingHasClient ? 1 : 0) + ($onboardingHasInvoice ? 1 : 0); @endphp
+            <div style="text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:var(--ft-teal);line-height:1;">{{ $doneCount }}/3</div>
+                <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Done</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Progress Bar --}}
+    @php $pct = round(($doneCount / 3) * 100); @endphp
+    <div class="progress mb-3" style="height:5px;border-radius:99px;">
+        <div class="progress-bar" style="width:{{ $pct }}%;background:var(--ft-teal);border-radius:99px;"></div>
+    </div>
+
+    <div class="onboarding-steps">
+
+        {{-- Step 1: Currency --}}
+        <div class="onboarding-step {{ $onboardingCurrencySet ? 'done' : '' }}">
+            <div class="ob-step-icon">
+                @if($onboardingCurrencySet)
+                    <i class="fas fa-check"></i>
+                @else
+                    <span class="ob-step-num">1</span>
+                @endif
+            </div>
+            <div class="ob-step-body">
+                <div class="ob-step-title">Set your currency</div>
+                <div class="ob-step-desc">Choose the currency that matches your business.</div>
+            </div>
+            @if(!$onboardingCurrencySet)
+            <a href="{{ route('settings.index') }}" class="btn btn-xs btn-teal">
+                Go <i class="fas fa-arrow-right"></i>
+            </a>
+            @endif
+        </div>
+
+        {{-- Step 2: First Client --}}
+        <div class="onboarding-step {{ $onboardingHasClient ? 'done' : '' }}">
+            <div class="ob-step-icon">
+                @if($onboardingHasClient)
+                    <i class="fas fa-check"></i>
+                @else
+                    <span class="ob-step-num">2</span>
+                @endif
+            </div>
+            <div class="ob-step-body">
+                <div class="ob-step-title">Add your first client</div>
+                <div class="ob-step-desc">Add a client you work with so you can invoice them.</div>
+            </div>
+            @if(!$onboardingHasClient)
+            <a href="{{ route('clients.create') }}" class="btn btn-xs btn-teal">
+                Go <i class="fas fa-arrow-right"></i>
+            </a>
+            @endif
+        </div>
+
+        {{-- Step 3: First Invoice --}}
+        <div class="onboarding-step {{ $onboardingHasInvoice ? 'done' : '' }}">
+            <div class="ob-step-icon">
+                @if($onboardingHasInvoice)
+                    <i class="fas fa-check"></i>
+                @else
+                    <span class="ob-step-num">3</span>
+                @endif
+            </div>
+            <div class="ob-step-body">
+                <div class="ob-step-title">Create your first invoice</div>
+                <div class="ob-step-desc">Send a professional invoice and start tracking payments.</div>
+            </div>
+            @if(!$onboardingHasInvoice)
+            <a href="{{ route('invoices.create') }}" class="btn btn-xs btn-teal">
+                Go <i class="fas fa-arrow-right"></i>
+            </a>
+            @endif
+        </div>
+
+    </div>
+</div>
+@endif
+
 {{-- ── Page Header ─────────────────────────────────── --}}
 <div class="page-header">
     <div>
@@ -14,6 +111,10 @@
         </p>
     </div>
     <div class="page-actions">
+        {{-- Customize Cards Toggle --}}
+        <button class="btn btn-xs btn-outline-secondary" id="customizeCardsBtn" title="Drag stat cards to reorder">
+            <i class="fas fa-sliders"></i> <span id="customizeBtnLabel">Customize</span>
+        </button>
         <span style="font-size:12px;color:var(--text-muted);font-weight:500;">
             <i class="fas fa-calendar-days me-1" style="color:var(--ft-teal);"></i>
             {{ now()->format('M j, Y') }}
@@ -57,12 +158,13 @@
     </div>
 </div>
 
-{{-- ── Stat Cards ───────────────────────────────────── --}}
-<div class="row g-3 mb-4">
+{{-- ── Stat Cards (Draggable/Reorderable) ──────────── --}}
+<div class="row g-3 mb-4" id="statCardsRow">
 
     {{-- Net Position --}}
-    <div class="col-6 col-xl-3">
+    <div class="col-6 col-xl-3" data-card-id="net-position">
         <div class="card stat-card {{ $netPosition >= 0 ? 'sc-navy' : 'sc-rose' }}">
+            <div class="drag-handle" title="Drag to reorder"><i class="fas fa-grip-vertical"></i></div>
             <div class="d-flex justify-content-between align-items-start">
                 <div style="min-width:0;flex:1;">
                     <div class="stat-label">Net Position</div>
@@ -80,8 +182,9 @@
     </div>
 
     {{-- Total Income --}}
-    <div class="col-6 col-xl-3">
+    <div class="col-6 col-xl-3" data-card-id="total-income">
         <div class="card stat-card sc-emerald">
+            <div class="drag-handle" title="Drag to reorder"><i class="fas fa-grip-vertical"></i></div>
             <div class="d-flex justify-content-between align-items-start">
                 <div style="min-width:0;flex:1;">
                     <div class="stat-label">Total Income</div>
@@ -98,8 +201,9 @@
     </div>
 
     {{-- Total Expenses --}}
-    <div class="col-6 col-xl-3">
+    <div class="col-6 col-xl-3" data-card-id="total-expenses">
         <div class="card stat-card sc-rose">
+            <div class="drag-handle" title="Drag to reorder"><i class="fas fa-grip-vertical"></i></div>
             <div class="d-flex justify-content-between align-items-start">
                 <div style="min-width:0;flex:1;">
                     <div class="stat-label">Total Expenses</div>
@@ -116,8 +220,9 @@
     </div>
 
     {{-- Savings --}}
-    <div class="col-6 col-xl-3">
+    <div class="col-6 col-xl-3" data-card-id="savings">
         <div class="card stat-card sc-teal">
+            <div class="drag-handle" title="Drag to reorder"><i class="fas fa-grip-vertical"></i></div>
             <div class="d-flex justify-content-between align-items-start">
                 <div style="min-width:0;flex:1;">
                     <div class="stat-label">Savings</div>
@@ -526,6 +631,75 @@
                     }
                 }
             }
+        });
+    }
+
+    // ── Stat Card Drag-to-Reorder ─────────────────────────────────────────────
+    var cardRow         = document.getElementById('statCardsRow');
+    var customizeBtn    = document.getElementById('customizeCardsBtn');
+    var customizeLabel  = document.getElementById('customizeBtnLabel');
+    var sortingMode     = false;
+    var sortableInstance = null;
+
+    // Restore saved order immediately (before Sortable init)
+    (function restoreCardOrder() {
+        try {
+            var saved = JSON.parse(localStorage.getItem('ft_card_order') || 'null');
+            if (!saved || !Array.isArray(saved) || saved.length !== 4) return;
+            saved.forEach(function (id) {
+                var el = cardRow.querySelector('[data-card-id="' + id + '"]');
+                if (el) cardRow.appendChild(el);
+            });
+        } catch (e) {}
+    })();
+
+    if (cardRow && typeof Sortable !== 'undefined') {
+        sortableInstance = Sortable.create(cardRow, {
+            animation:    180,
+            handle:       '.drag-handle',
+            ghostClass:   'card-ghost',
+            chosenClass:  'card-chosen',
+            disabled:     true, // start disabled; enabled in sorting mode
+            onEnd: function () {
+                var order = Array.from(cardRow.querySelectorAll('[data-card-id]'))
+                    .map(function (el) { return el.getAttribute('data-card-id'); });
+                localStorage.setItem('ft_card_order', JSON.stringify(order));
+            }
+        });
+    }
+
+    if (customizeBtn) {
+        customizeBtn.addEventListener('click', function () {
+            sortingMode = !sortingMode;
+            document.body.classList.toggle('sorting-mode', sortingMode);
+            if (sortableInstance) sortableInstance.option('disabled', !sortingMode);
+            customizeBtn.classList.toggle('btn-primary', sortingMode);
+            customizeBtn.classList.toggle('btn-outline-secondary', !sortingMode);
+            customizeLabel.textContent = sortingMode ? 'Done' : 'Customize';
+            if (sortingMode) {
+                customizeBtn.querySelector('i').className = 'fas fa-check';
+            } else {
+                customizeBtn.querySelector('i').className = 'fas fa-sliders';
+                showToast('Card order saved!', 'success');
+            }
+        });
+    }
+
+    // ── Onboarding dismiss ────────────────────────────────────────────────────
+    var dismissBtn     = document.getElementById('onboardingDismiss');
+    var onboardingCard = document.getElementById('onboardingCard');
+
+    if (dismissBtn && onboardingCard) {
+        // Check if user dismissed before
+        if (localStorage.getItem('ft_onboarding_dismissed') === '1') {
+            onboardingCard.style.display = 'none';
+        }
+        dismissBtn.addEventListener('click', function () {
+            onboardingCard.style.transition = 'opacity .25s, max-height .3s';
+            onboardingCard.style.opacity = '0';
+            onboardingCard.style.overflow = 'hidden';
+            setTimeout(function () { onboardingCard.style.display = 'none'; }, 300);
+            localStorage.setItem('ft_onboarding_dismissed', '1');
         });
     }
 })();

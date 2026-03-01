@@ -14,7 +14,7 @@
         </div>
         
         <div class="auth-card-body">
-            <div class="alert alert-info mb-4" style="padding: 12px 16px; border-radius: 8px; background: rgba(14, 116, 144, 0.1); border: 1px solid rgba(14, 116, 144, 0.3); color: var(--ft-teal-blue); font-size: 14px;">
+            <div class="alert alert-info mb-3">
                 This is a secure area. Please confirm your password before continuing.
             </div>
 

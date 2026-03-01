@@ -1,10 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ auth()->check() && auth()->user()->dark_mode ? 'dark' : 'light' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="FinTrack Portal — Financial Management Dashboard">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'FinTrack')</title>
+
+    {{-- Dark mode: apply theme from localStorage before CSS loads to prevent flash --}}
+    <script>
+    (function () {
+        var saved = localStorage.getItem('ft_dark_mode');
+        if (saved === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else if (saved === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+        // If saved is null, server-rendered data-theme from the attribute above takes precedence
+    })();
+    </script>
 
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +31,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SortableJS (for dashboard card reordering) -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
     <!-- Portal CSS -->
     <link href="{{ asset('assets/css/portal.css') }}" rel="stylesheet">
 
@@ -74,6 +90,14 @@
                             {{ $sidebarUnread > 99 ? '99+' : $sidebarUnread }}
                         </span>
                         @endif
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('export.index') }}"
+                       class="nav-link {{ request()->routeIs('export.*') ? 'active' : '' }}">
+                        <i class="fas fa-download nav-icon"></i>
+                        <span>Export Data</span>
                     </a>
                 </li>
 
@@ -206,6 +230,44 @@
                     </div>
                 </li>
 
+                {{-- ── Administration (Admin only) ── --}}
+                @if(Auth::user()->role === 'admin')
+                <li class="sb-label" style="margin-top:8px;color:rgba(255,255,255,.35);">Administration</li>
+
+                <li>
+                    <a href="{{ route('admin.dashboard') }}"
+                       class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
+                       style="{{ request()->routeIs('admin.*') ? '' : '' }}">
+                        <i class="fas fa-shield-halved nav-icon"></i>
+                        <span>Admin Panel</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('admin.users.index') }}"
+                       class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                        <i class="fas fa-users-gear nav-icon"></i>
+                        <span>User Management</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('admin.activity-logs.index') }}"
+                       class="nav-link {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }}">
+                        <i class="fas fa-list-check nav-icon"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('admin.settings.index') }}"
+                       class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                        <i class="fas fa-sliders nav-icon"></i>
+                        <span>System Settings</span>
+                    </a>
+                </li>
+                @endif
+
             </ul>
         </div>
 
@@ -219,7 +281,9 @@
                     </div>
                     <div class="flex-1" style="min-width:0;flex:1;">
                         <div class="sidebar-user-name">{{ Auth::user()->name }}</div>
-                        <div class="sidebar-user-role">Freelancer</div>
+                        <div class="sidebar-user-role">
+                            {{ Auth::user()->role === 'admin' ? 'Administrator' : 'Freelancer' }}
+                        </div>
                     </div>
                     <i class="fas fa-ellipsis-vertical" style="color:rgba(255,255,255,.35);font-size:11px;flex-shrink:0;"></i>
                 </button>
@@ -263,6 +327,19 @@
             <div class="topnav-spacer"></div>
 
             <div class="topnav-actions">
+
+                {{-- ── Quick-Add Button ── --}}
+                <button class="topnav-btn quick-add-btn" id="quickAddBtn"
+                        data-bs-toggle="modal" data-bs-target="#quickAddModal"
+                        aria-label="Quick add transaction" title="Quick add income or expense">
+                    <i class="fas fa-circle-plus"></i>
+                </button>
+
+                {{-- ── Dark Mode Toggle ── --}}
+                <button class="topnav-btn" id="darkModeToggle"
+                        aria-label="Toggle dark mode" title="Toggle dark mode">
+                    <i class="fas fa-moon" id="darkModeIcon"></i>
+                </button>
 
                 {{-- Notification Bell --}}
                 @php
@@ -425,6 +502,151 @@
 </div>
 {{-- /wrapper --}}
 
+<!-- ════════════════ QUICK-ADD MODAL ════════════════ -->
+@php
+    $qaIncomeCategories  = App\Models\Category::where('user_id', Auth::id())->where('type', 'income')->orderBy('name')->get();
+    $qaExpenseCategories = App\Models\Category::where('user_id', Auth::id())->where('type', 'expense')->orderBy('name')->get();
+@endphp
+<div class="modal fade" id="quickAddModal" tabindex="-1" aria-labelledby="quickAddModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
+        <div class="modal-content">
+            <div class="modal-header" style="padding:14px 18px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="qa-modal-icon">
+                        <i class="fas fa-circle-plus"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="quickAddModalLabel">Quick Add</h5>
+                        <div style="font-size:12px;color:var(--text-muted);">Log a transaction without leaving this page</div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            {{-- Tab Switcher --}}
+            <div class="qa-tabs">
+                <button class="qa-tab active" data-qa-tab="income" type="button">
+                    <i class="fas fa-arrow-trend-up"></i> Income
+                </button>
+                <button class="qa-tab" data-qa-tab="expense" type="button">
+                    <i class="fas fa-arrow-trend-down"></i> Expense
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                {{-- ── INCOME FORM ── --}}
+                <form id="qaIncomeForm" class="qa-form" data-qa-type="income">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Amount <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="font-size:13px;font-weight:700;color:var(--ft-emerald);">
+                                    <i class="fas fa-arrow-up"></i>
+                                </span>
+                                <input type="number" class="form-control" name="amount" placeholder="0.00"
+                                       min="0.01" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="income_date"
+                                   value="{{ now()->format('Y-m-d') }}" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Method <span class="text-danger">*</span></label>
+                            <select class="form-select" name="payment_method" required>
+                                <option value="cash">Cash</option>
+                                <option value="bank_transfer" selected>Bank Transfer</option>
+                                <option value="mpesa">M-Pesa</option>
+                                <option value="card">Card</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" name="category_id">
+                                <option value="">— None —</option>
+                                @foreach($qaIncomeCategories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            <input type="text" class="form-control" name="notes" placeholder="Optional note…" maxlength="500">
+                        </div>
+                    </div>
+                </form>
+
+                {{-- ── EXPENSE FORM ── --}}
+                <form id="qaExpenseForm" class="qa-form d-none" data-qa-type="expense">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Amount <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="font-size:13px;font-weight:700;color:var(--ft-rose);">
+                                    <i class="fas fa-arrow-down"></i>
+                                </span>
+                                <input type="number" class="form-control" name="amount" placeholder="0.00"
+                                       min="0.01" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="expense_date"
+                                   value="{{ now()->format('Y-m-d') }}" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Method <span class="text-danger">*</span></label>
+                            <select class="form-select" name="payment_method" required>
+                                <option value="cash">Cash</option>
+                                <option value="bank_transfer" selected>Bank Transfer</option>
+                                <option value="mpesa">M-Pesa</option>
+                                <option value="card">Card</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" name="category_id">
+                                <option value="">— None —</option>
+                                @foreach($qaExpenseCategories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Vendor / Payee</label>
+                            <input type="text" class="form-control" name="vendor_name" placeholder="Who did you pay?…" maxlength="150">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            <input type="text" class="form-control" name="notes" placeholder="Optional note…" maxlength="500">
+                        </div>
+                    </div>
+                </form>
+
+                {{-- Inline feedback --}}
+                <div id="qaFeedback" class="mt-3" style="display:none;"></div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="qaSubmitBtn">
+                    <i class="fas fa-plus me-1"></i>
+                    <span id="qaSubmitLabel">Add Income</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ── Quick-Add Toast Notification ── --}}
+<div class="qa-toast-container" id="qaToastContainer"></div>
+
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Portal JS -->
@@ -503,6 +725,110 @@
             badge.textContent = next > 99 ? '99+' : next;
         }
     }
+})();
+
+// ─── Quick-Add Modal ──────────────────────────────────────────────────────────
+(function () {
+    var CSRF          = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    var INCOME_URL    = '{{ route('quick-add.income') }}';
+    var EXPENSE_URL   = '{{ route('quick-add.expense') }}';
+
+    var currentTab    = 'income';
+    var tabs          = document.querySelectorAll('.qa-tab');
+    var forms         = { income: document.getElementById('qaIncomeForm'), expense: document.getElementById('qaExpenseForm') };
+    var submitBtn     = document.getElementById('qaSubmitBtn');
+    var submitLabel   = document.getElementById('qaSubmitLabel');
+    var feedbackEl    = document.getElementById('qaFeedback');
+
+    function switchTab(tab) {
+        currentTab = tab;
+        tabs.forEach(function (t) {
+            t.classList.toggle('active', t.dataset.qaTab === tab);
+        });
+        forms.income.classList.toggle('d-none', tab !== 'income');
+        forms.expense.classList.toggle('d-none', tab !== 'expense');
+        submitLabel.textContent = tab === 'income' ? 'Add Income' : 'Add Expense';
+        feedbackEl.style.display = 'none';
+    }
+
+    tabs.forEach(function (btn) {
+        btn.addEventListener('click', function () { switchTab(btn.dataset.qaTab); });
+    });
+
+    // Reset modal when hidden
+    document.getElementById('quickAddModal').addEventListener('hidden.bs.modal', function () {
+        forms.income.reset();
+        forms.expense.reset();
+        // Re-set today's date
+        var today = new Date().toISOString().split('T')[0];
+        var inDateEl = forms.income.querySelector('[name="income_date"]');
+        var exDateEl = forms.expense.querySelector('[name="expense_date"]');
+        if (inDateEl) inDateEl.value = today;
+        if (exDateEl) exDateEl.value = today;
+        feedbackEl.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i><span id="qaSubmitLabel">Add Income</span>';
+        submitLabel = document.getElementById('qaSubmitLabel');
+        switchTab('income');
+    });
+
+    // Submit
+    submitBtn.addEventListener('click', function () {
+        var form    = forms[currentTab];
+        var url     = currentTab === 'income' ? INCOME_URL : EXPENSE_URL;
+        var data    = new FormData(form);
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Saving…';
+
+        fetch(url, {
+            method:  'POST',
+            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            body:    data,
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+            if (json.success) {
+                showToast(json.message, 'success');
+                bootstrap.Modal.getInstance(document.getElementById('quickAddModal')).hide();
+            } else {
+                var msgs = json.errors ? Object.values(json.errors).flat().join('<br>') : (json.message || 'Failed to save.');
+                feedbackEl.innerHTML = '<div class="alert alert-danger mb-0" style="font-size:12.5px;">' + msgs + '</div>';
+                feedbackEl.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i><span id="qaSubmitLabel">' + (currentTab === 'income' ? 'Add Income' : 'Add Expense') + '</span>';
+                submitLabel = document.getElementById('qaSubmitLabel');
+            }
+        })
+        .catch(function () {
+            feedbackEl.innerHTML = '<div class="alert alert-danger mb-0" style="font-size:12.5px;">Network error. Please try again.</div>';
+            feedbackEl.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i><span id="qaSubmitLabel">' + (currentTab === 'income' ? 'Add Income' : 'Add Expense') + '</span>';
+            submitLabel = document.getElementById('qaSubmitLabel');
+        });
+    });
+
+    // Toast helper
+    window.showToast = function (msg, type) {
+        var container = document.getElementById('qaToastContainer');
+        var color = type === 'success' ? 'var(--ft-emerald)' : 'var(--ft-rose)';
+        var icon  = type === 'success' ? 'fas fa-circle-check' : 'fas fa-circle-xmark';
+        var el    = document.createElement('div');
+        el.className = 'qa-toast';
+        el.innerHTML = '<i class="' + icon + '" style="color:' + color + ';font-size:15px;flex-shrink:0;"></i><span>' + msg + '</span>';
+        container.appendChild(el);
+        requestAnimationFrame(function () { el.classList.add('show'); });
+        setTimeout(function () {
+            el.classList.remove('show');
+            setTimeout(function () { el.remove(); }, 350);
+        }, 3500);
+    };
 })();
 </script>
 

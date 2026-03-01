@@ -10,7 +10,18 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use Illuminate\Support\Facades\Route;
+
+// ── Two-Factor Authentication (OTP) ─────────────────────────────────────────
+// These routes sit outside the 'guest' group because the user is not yet
+// authenticated (we logged them out after credential verification) but they
+// also must not be accessible once fully logged in (guest check handled in
+// the controller via session key 'two_factor_pending_user_id').
+Route::get('two-factor',        [TwoFactorController::class, 'create'])->name('two-factor.create');
+Route::post('two-factor',       [TwoFactorController::class, 'store'])->name('two-factor.store');
+Route::post('two-factor/resend',[TwoFactorController::class, 'resend'])->name('two-factor.resend')
+    ->middleware('throttle:5,1');
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])

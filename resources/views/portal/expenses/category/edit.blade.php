@@ -57,7 +57,11 @@
                                 <button type="button"
                                         class="color-swatch"
                                         data-color="{{ $sw }}"
-                                        style="width:22px;height:22px;border-radius:50%;background:{{ $sw }};border:2px solid {{ (old('color', $category->color) === $sw) ? '#0F172A' : 'transparent' }};cursor:pointer;flex-shrink:0;"></button>
+                                        style="width:22px;height:22px;border-radius:50%;background:{{ $sw }};cursor:pointer;flex-shrink:0;"
+                                        @if(strtolower(old('color', $category->color)) === strtolower($sw))
+                                            data-preselected="1"
+                                        @endif
+                                        ></button>
                                 @endforeach
                             </div>
                         </div>
@@ -124,13 +128,16 @@
         hexLabel.textContent = this.value.toUpperCase();
     });
 
+    /* Mark pre-selected swatch on page load */
+    document.querySelectorAll('.color-swatch[data-preselected]').forEach(s => s.classList.add('swatch-selected'));
+
     document.querySelectorAll('.color-swatch').forEach(function (btn) {
         btn.addEventListener('click', function () {
             const c = this.dataset.color;
             colorInput.value     = c;
             hexLabel.textContent = c.toUpperCase();
-            document.querySelectorAll('.color-swatch').forEach(s => s.style.borderColor = 'transparent');
-            this.style.borderColor = '#0F172A';
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('swatch-selected'));
+            this.classList.add('swatch-selected');
         });
     });
 })();

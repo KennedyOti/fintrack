@@ -1,252 +1,240 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="FinTrack - The financial management platform designed for freelancers. Track income, expenses, savings, generate invoices & quotes, and manage clients - all in one place.">
-    <meta name="keywords" content="freelancer finance, income tracking, expense management, invoicing, quotes, client management, financial planning">
-    <title>@yield('title', 'FinTrack - Financial Management for Freelancers')</title>
-    
-    <!-- Fonts -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="@yield('meta-description', 'FinTrack — The financial command center for freelancers and independent professionals. Invoice clients, track income & expenses, manage savings goals, and gain financial clarity.')">
+    <meta name="keywords" content="freelancer finance, income tracking, expense management, invoicing, quotes, client management, savings goals, financial reports">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title"       content="@yield('og-title', 'FinTrack — Financial Management for Freelancers')">
+    <meta property="og:description" content="@yield('og-description', 'The all-in-one financial platform built for freelancers. Track income, send invoices, manage expenses and savings — all in one dashboard.')">
+    <meta property="og:type"        content="website">
+    <meta property="og:image"       content="{{ asset('assets/images/dashbaord.png') }}">
+    <title>@yield('title', 'FinTrack — Financial Management for Freelancers')</title>
+
+    {{-- Fonts: Space Grotesk + Inter --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Bootstrap 5 CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    {{-- Bootstrap 5 --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
+    {{-- Font Awesome 6 --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
+    {{-- Custom styles --}}
     <link href="{{ asset('assets/css/styles.css') }}" rel="stylesheet">
-    
+
     @yield('styles')
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar-custom" id="navbar">
-        <div class="navbar-container">
-            <!-- Logo -->
-            <a class="navbar-brand-custom" href="{{ route('home') }}">
-                <img src="{{ asset('assets/images/logo.png') }}" alt="FinTrack Logo">
-            </a>
-            
-            <!-- Desktop Navigation -->
-            <ul class="navbar-nav-custom">
-                <li><a href="{{ route('home') }}" class="nav-link-custom active">Home</a></li>
-                <li><a href="#features" class="nav-link-custom">Features</a></li>
-                <li><a href="#how-it-works" class="nav-link-custom">How It Works</a></li>
-                <li><a href="#testimonials" class="nav-link-custom">Testimonials</a></li>
-                @auth
-                <li class="nav-btn">
-                    <a href="{{ route('dashboard') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-th-large"></i> Dashboard
-                    </a>
-                </li>
-                @else
-                <li class="nav-btn">
-                    <a href="{{ route('login') }}" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                </li>
-                <li class="nav-btn">
-                    <a href="{{ route('register') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-user-plus"></i> Get Started
-                    </a>
-                </li>
-                @endauth
-            </ul>
-            
-            <!-- Mobile Menu Button -->
-            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-        </div>
-    </nav>
-    
-    <!-- Mobile Sidebar Overlay -->
-    <div class="mobile-sidebar-overlay" id="sidebarOverlay"></div>
-    
-    <!-- Mobile Sidebar -->
-    <div class="mobile-sidebar" id="mobileSidebar">
-        <div class="mobile-sidebar-header">
-            <a class="navbar-brand-custom" href="{{ route('home') }}">
-                <img src="{{ asset('assets/images/logo.png') }}" alt="FinTrack Logo">
-            </a>
-            <button class="mobile-sidebar-close" id="sidebarClose" aria-label="Close menu">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <ul class="mobile-nav-links">
+
+{{-- ── Navbar ──────────────────────────────────────────────── --}}
+<nav class="site-nav" id="siteNav">
+    <div class="nav-inner">
+
+        {{-- Logo --}}
+        <a href="{{ route('home') }}" class="nav-brand">
+            <img src="{{ asset('assets/images/logo.png') }}" alt="FinTrack">
+            <span class="nav-brand-name">FinTrack</span>
+        </a>
+
+        {{-- Desktop links --}}
+        <ul class="nav-links">
             <li>
-                <a href="{{ route('home') }}">
-                    <i class="fas fa-home"></i> Home
+                <a href="{{ route('home') }}"
+                   class="{{ request()->routeIs('home') ? 'active' : '' }}">
+                    Home
                 </a>
             </li>
             <li>
-                <a href="#features">
-                    <i class="fas fa-star"></i> Features
+                <a href="{{ route('about') }}"
+                   class="{{ request()->routeIs('about') ? 'active' : '' }}">
+                    About
                 </a>
             </li>
             <li>
-                <a href="#how-it-works">
-                    <i class="fas fa-question-circle"></i> How It Works
-                </a>
-            </li>
-            <li>
-                <a href="#testimonials">
-                    <i class="fas fa-comment-alt"></i> Testimonials
+                <a href="{{ route('how-it-works') }}"
+                   class="{{ request()->routeIs('how-it-works') ? 'active' : '' }}">
+                    How It Works
                 </a>
             </li>
         </ul>
-        
-        <div class="mobile-sidebar-footer">
+
+        {{-- Auth actions --}}
+        <div class="nav-actions">
             @auth
-            <a href="{{ route('dashboard') }}" class="btn btn-primary w-100 mb-3">
-                <i class="fas fa-th-large"></i> Go to Dashboard
-            </a>
+                <a href="{{ route('dashboard') }}" class="btn btn-ghost btn-sm">
+                    <i class="fa-solid fa-gauge-high"></i> Dashboard
+                </a>
             @else
-            <a href="{{ route('login') }}" class="btn btn-secondary w-100 mb-3">
-                <i class="fas fa-sign-in-alt"></i> Login
-            </a>
-            <a href="{{ route('register') }}" class="btn btn-primary w-100">
-                <i class="fas fa-user-plus"></i> Get Started Free
-            </a>
+                <a href="{{ route('login') }}"    class="btn btn-ghost btn-sm">Log In</a>
+                <a href="{{ route('register') }}" class="btn btn-primary btn-sm">
+                    Get Started <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            @endauth
+        </div>
+
+        {{-- Mobile hamburger --}}
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+    </div>
+</nav>
+
+{{-- ── Mobile Drawer ────────────────────────────────────────── --}}
+<div class="nav-drawer" id="navDrawer">
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="drawer-panel">
+        <a href="{{ route('home') }}"          class="drawer-link"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="{{ route('about') }}"         class="drawer-link"><i class="fa-solid fa-circle-info"></i> About</a>
+        <a href="{{ route('how-it-works') }}"  class="drawer-link"><i class="fa-solid fa-circle-question"></i> How It Works</a>
+        <div class="drawer-sep"></div>
+        <div class="drawer-actions">
+            @auth
+                <a href="{{ route('dashboard') }}" class="btn btn-ghost">
+                    <i class="fa-solid fa-gauge-high"></i> Go to Dashboard
+                </a>
+            @else
+                <a href="{{ route('login') }}"    class="btn btn-outline">Log In</a>
+                <a href="{{ route('register') }}" class="btn btn-primary">
+                    Get Started Free <i class="fa-solid fa-arrow-right"></i>
+                </a>
             @endauth
         </div>
     </div>
+</div>
 
-    <!-- Main Content -->
-    <main>
-        @yield('content')
-    </main>
+{{-- ── Page Content ─────────────────────────────────────────── --}}
+<main>
+    @yield('content')
+</main>
 
-    <!-- Footer -->
-    <footer class="footer-section">
-        <div class="container">
-            <div class="row g-5">
-                <!-- Brand Column -->
-                <div class="col-lg-4">
-                    <div class="footer-brand">
-                        <a href="{{ route('home') }}">
-                            <img src="{{ asset('assets/images/logo.png') }}" alt="FinTrack Logo">
-                        </a>
-                    </div>
-                    <p class="footer-description">
-                        The financial management platform designed specifically for freelancers. 
-                        Track income, expenses, savings, and manage your clients - all in one powerful dashboard.
-                    </p>
-                    <div class="footer-social">
-                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    </div>
+{{-- ── Footer ───────────────────────────────────────────────── --}}
+<footer class="site-footer">
+    <div class="container" style="max-width:1160px;">
+        <div class="row g-5">
+
+            {{-- Brand --}}
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-brand">
+                    <a href="{{ route('home') }}">
+                        <img src="{{ asset('assets/images/logo.png') }}" alt="FinTrack">
+                    </a>
                 </div>
-                
-                <!-- Quick Links -->
-                <div class="col-lg-2">
-                    <h6 class="footer-title">Quick Links</h6>
-                    <ul class="footer-links">
-                        <li><a href="{{ route('home') }}"><i class="fas fa-chevron-right"></i> Home</a></li>
-                        <li><a href="#features"><i class="fas fa-chevron-right"></i> Features</a></li>
-                        <li><a href="#how-it-works"><i class="fas fa-chevron-right"></i> How It Works</a></li>
-                        <li><a href="#testimonials"><i class="fas fa-chevron-right"></i> Testimonials</a></li>
-                    </ul>
+                <p class="footer-desc">
+                    FinTrack is the financial command center for freelancers and
+                    independent professionals — built to bring clarity and control
+                    to your finances.
+                </p>
+                <div class="footer-socials">
+                    <a href="#" class="social-btn" aria-label="Twitter / X"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#" class="social-btn" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#" class="social-btn" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="social-btn" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
                 </div>
-                
-                <!-- Tools -->
-                <div class="col-lg-2">
-                    <h6 class="footer-title">Tools</h6>
-                    <ul class="footer-links">
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Income Tracking</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Expense Management</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Invoice Generator</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Quote Generator</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Savings Goals</a></li>
-                    </ul>
-                </div>
-                
-                <!-- Contact -->
-                <div class="col-lg-4">
-                    <h6 class="footer-title">Contact Us</h6>
-                    <div class="footer-contact-item">
-                        <i class="fas fa-envelope"></i>
+            </div>
+
+            {{-- Navigation --}}
+            <div class="col-lg-2 col-md-3 col-6">
+                <p class="footer-h">Navigation</p>
+                <ul class="footer-list">
+                    <li><a href="{{ route('home') }}">Home</a></li>
+                    <li><a href="{{ route('about') }}">About</a></li>
+                    <li><a href="{{ route('how-it-works') }}">How It Works</a></li>
+                    <li><a href="{{ route('login') }}">Log In</a></li>
+                    <li><a href="{{ route('register') }}">Get Started</a></li>
+                </ul>
+            </div>
+
+            {{-- Features --}}
+            <div class="col-lg-2 col-md-3 col-6">
+                <p class="footer-h">Features</p>
+                <ul class="footer-list">
+                    <li><a href="{{ route('how-it-works') }}">Income Tracking</a></li>
+                    <li><a href="{{ route('how-it-works') }}">Invoice Management</a></li>
+                    <li><a href="{{ route('how-it-works') }}">Expense Tracking</a></li>
+                    <li><a href="{{ route('how-it-works') }}">Savings Goals</a></li>
+                    <li><a href="{{ route('how-it-works') }}">Financial Reports</a></li>
+                </ul>
+            </div>
+
+            {{-- Contact --}}
+            <div class="col-lg-4 col-md-6">
+                <p class="footer-h">Get in Touch</p>
+                <div class="footer-contact">
+                    <div class="footer-contact-row">
+                        <i class="fa-solid fa-envelope"></i>
                         <span>support@fintrack.co.ke</span>
                     </div>
-                    <div class="footer-contact-item">
-                        <i class="fas fa-phone-alt"></i>
-                        <span>+254793543659</span>
+                    <div class="footer-contact-row">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>+254 793 543 659</span>
                     </div>
-                    <div class="footer-contact-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>Nairobi Kenya, Suite 100<br>Nairobi Kenya, NA 10001</span>
+                    <div class="footer-contact-row">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>Nairobi, Kenya</span>
                     </div>
                 </div>
             </div>
-            
-            <!-- Footer Bottom -->
-            <div class="footer-bottom">
-                <div class="footer-bottom-content">
-                    <p class="footer-copyright">
-                        &copy; {{ date('Y') }} FinTrack. All rights reserved. Built for freelancers.
-                    </p>
-                    <div class="footer-bottom-links">
-                        <a href="#">Privacy Policy</a>
-                        <a href="#">Terms of Service</a>
-                        <a href="#">Cookie Policy</a>
-                    </div>
-                </div>
+
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; {{ date('Y') }} FinTrack. All rights reserved. Built for freelancers.</p>
+            <div class="footer-bottom-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
             </div>
         </div>
-    </footer>
+    </div>
+</footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="{{ asset('assets/js/script.js') }}"></script>
-    
-    <script>
-        // Mobile Menu Toggle
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mobileSidebar = document.getElementById('mobileSidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const sidebarClose = document.getElementById('sidebarClose');
-        
-        function openSidebar() {
-            mobileSidebar.classList.add('active');
-            sidebarOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeSidebar() {
-            mobileSidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        
-        mobileMenuBtn.addEventListener('click', openSidebar);
-        sidebarClose.addEventListener('click', closeSidebar);
-        sidebarOverlay.addEventListener('click', closeSidebar);
-        
-        // Close sidebar on link click
-        document.querySelectorAll('.mobile-nav-links a').forEach(link => {
-            link.addEventListener('click', closeSidebar);
-        });
-        
-        // Navbar scroll effect
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        });
-    </script>
-    
-    @yield('scripts')
+{{-- ── Scripts ───────────────────────────────────────────────── --}}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+(function () {
+    /* ── Navbar scroll effect ── */
+    const nav = document.getElementById('siteNav');
+    function updateNav() {
+        nav.classList.toggle('scrolled', window.scrollY > 40);
+    }
+    window.addEventListener('scroll', updateNav, { passive: true });
+    updateNav();
+
+    /* ── Mobile drawer ── */
+    const toggle  = document.getElementById('navToggle');
+    const drawer  = document.getElementById('navDrawer');
+    const overlay = document.getElementById('drawerOverlay');
+
+    function openDrawer() {
+        drawer.classList.add('open');
+        toggle.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+        drawer.classList.remove('open');
+        toggle.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    toggle.addEventListener('click', () => {
+        drawer.classList.contains('open') ? closeDrawer() : openDrawer();
+    });
+    overlay.addEventListener('click', closeDrawer);
+
+    document.querySelectorAll('.drawer-link, .drawer-actions .btn').forEach(el => {
+        el.addEventListener('click', closeDrawer);
+    });
+})();
+</script>
+
+@yield('scripts')
+@stack('scripts')
 </body>
 </html>

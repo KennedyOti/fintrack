@@ -120,8 +120,8 @@
             const c = this.dataset.color;
             colorInput.value     = c;
             hexLabel.textContent = c.toUpperCase();
-            document.querySelectorAll('.color-swatch').forEach(s => s.style.borderColor = 'transparent');
-            this.style.borderColor = '#0F172A';
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('swatch-selected'));
+            this.classList.add('swatch-selected');
         });
     });
 })();

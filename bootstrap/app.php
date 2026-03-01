@@ -16,7 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('notifications:generate')->dailyAt('07:00');
     })
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Register custom middleware aliases
+        $middleware->alias([
+            'role'   => \App\Http\Middleware\CheckRole::class,
+            'active' => \App\Http\Middleware\EnsureUserIsActive::class,
+        ]);
+
+        // Enforce account-active check on all authenticated routes
+        $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUserIsActive::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
