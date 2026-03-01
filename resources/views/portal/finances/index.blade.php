@@ -108,7 +108,7 @@
                         <i class="fas fa-arrow-up text-success"></i>
                     </div>
                 </div>
-                <small class="text-muted">All income for {{ $month ? \Carbon\Carbon::create()->month($month)->format('F') : $year }}</small>
+                <small class="text-muted">All income for {{ $month ? \Carbon\Carbon::create()->month((int)$month)->format('F') : $year }}</small>
             </div>
         </div>
     </div>
@@ -124,7 +124,7 @@
                         <i class="fas fa-arrow-down text-danger"></i>
                     </div>
                 </div>
-                <small class="text-muted">All expenses for {{ $month ? \Carbon\Carbon::create()->month($month)->format('F') : $year }}</small>
+                <small class="text-muted">All expenses for {{ $month ? \Carbon\Carbon::create()->month((int)$month)->format('F') : $year }}</small>
             </div>
         </div>
     </div>
