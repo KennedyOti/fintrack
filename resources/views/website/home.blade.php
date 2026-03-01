@@ -64,7 +64,7 @@
             <div class="col-lg-6">
                 <div class="hero-visual anim-fade-up delay-2">
                     <div class="hero-shot-wrap">
-                        <img src="{{ asset('assets/images/dashbaord.png') }}"
+                        <img src="{{ asset('assets/images/dashboard1.png') }}"
                              alt="FinTrack Dashboard — financial overview"
                              loading="eager">
                     </div>
