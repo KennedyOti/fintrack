@@ -38,9 +38,11 @@ class DashboardController extends Controller
         //     ->whereIn('status', ['pending', 'partial'])
         //     ->sum(DB::raw('original_amount - paid_amount'));
         
-        // Net Position = Income + Savings + Receivables - Payables - Expenses
-        // Note: Draft and sent invoices are NOT included - only actual payments
-        $netPosition = $totalIncome - $totalExpenses + $totalSavings + $totalReceivables - $totalPayables;
+        // Net Position = Income + Savings - Expenses - Payables
+        // Receivables (pending/partial) are NOT included — only actual received payments count.
+        // Income records are created when invoice payments are recorded, so paid amounts
+        // are already captured in $totalIncome.
+        $netPosition = $totalIncome - $totalExpenses + $totalSavings - $totalPayables;
         
         // Get recent transactions
         $recentIncomes = Income::where('user_id', $user->id)
