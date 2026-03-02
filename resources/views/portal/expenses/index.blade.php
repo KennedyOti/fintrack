@@ -152,7 +152,7 @@
 <div class="card">
     <div class="card-body p-0">
         @if($expenses->count() > 0)
-        <div class="table-responsive">
+        <div>
             <table class="table table-hover mb-0">
                 <thead>
                     <tr>
