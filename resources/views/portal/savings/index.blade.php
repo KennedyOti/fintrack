@@ -4,14 +4,16 @@
 
 @section('content')
 <!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
-        <h4 class="mb-0">Savings Accounts</h4>
-        <p class="text-muted mb-0">Manage your savings goals and accounts</p>
+        <h1 class="page-title">Savings Accounts</h1>
+        <p class="page-subtitle">Manage your savings goals and accounts</p>
     </div>
-    <a href="{{ route('savings.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i> New Savings Account
-    </a>
+    <div class="page-actions">
+        <a href="{{ route('savings.create') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i> New Savings Account
+        </a>
+    </div>
 </div>
 
 <!-- Filters -->
@@ -163,6 +165,7 @@ $availableForSavings = $netIncome - $totalSavings;
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         @if($accounts->count() > 0)
+        <div class="table-responsive">
             <table class="table table-hover table-nowrap mb-0">
                 <thead>
                     <tr>
@@ -234,6 +237,7 @@ $availableForSavings = $netIncome - $totalSavings;
                     @endforeach
                 </tbody>
             </table>
+        </div>
         @else
         <div class="text-center py-5">
             <div class="mb-3">

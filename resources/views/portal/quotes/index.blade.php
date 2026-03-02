@@ -4,14 +4,16 @@
 
 @section('content')
 <!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
-        <h4 class="mb-0">Quotes</h4>
-        <p class="text-muted mb-0">Manage your quotes and send to clients</p>
+        <h1 class="page-title">Quotes</h1>
+        <p class="page-subtitle">Manage your quotes and send to clients</p>
     </div>
-    <a href="{{ route('quotes.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i> Create Quote
-    </a>
+    <div class="page-actions">
+        <a href="{{ route('quotes.create') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i> Create Quote
+        </a>
+    </div>
 </div>
 
 <!-- Filters -->
@@ -62,8 +64,8 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         @if($quotes->count() > 0)
-        <div style="overflow: visible;">
-            <table class="table table-hover mb-0" style="min-width: 100%;">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Quote #</th>

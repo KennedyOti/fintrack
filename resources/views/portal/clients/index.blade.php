@@ -4,14 +4,16 @@
 
 @section('content')
 <!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
-        <h4 class="mb-0">Clients</h4>
-        <p class="text-muted mb-0">Manage your client relationships</p>
+        <h1 class="page-title">Clients</h1>
+        <p class="page-subtitle">Manage your client relationships</p>
     </div>
-    <a href="{{ route('clients.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i> Add Client
-    </a>
+    <div class="page-actions">
+        <a href="{{ route('clients.create') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i> Add Client
+        </a>
+    </div>
 </div>
 
 <!-- Filters -->
@@ -48,6 +50,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         @if($clients->count() > 0)
+        <div class="table-responsive">
         <table class="table table-hover mb-0">
                 <thead>
                     <tr>
@@ -118,6 +121,7 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
         @else
         <div class="text-center py-5">
             <i class="fas fa-users fa-3x text-muted mb-3"></i>

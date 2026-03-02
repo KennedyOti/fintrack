@@ -1053,6 +1053,27 @@ body {
     .page-content { padding: 12px 10px; }
 }
 
+/* ─── Global Mobile Polish ───────────────────────────── */
+/* Smooth inertia scrolling for tables on iOS */
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent any child from blowing out the page width */
+.page-content { max-width: 100%; }
+
+/* Quick-save / info cards with side-by-side content: wrap on small phones */
+@media (max-width: 575.98px) {
+    .card-body > .d-flex.justify-content-between {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .card-body > .d-flex.justify-content-between > .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 /* Invoices table: prevent unwanted overflow */
 .invoices-table .table-responsive { overflow-x: auto; }
 

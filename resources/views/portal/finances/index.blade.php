@@ -4,16 +4,16 @@
 
 @section('content')
 <!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
-        <h4 class="mb-0">Financial Overview</h4>
-        <p class="text-muted mb-0">Complete financial summary and reports</p>
+        <h1 class="page-title">Financial Overview</h1>
+        <p class="page-subtitle">Complete financial summary and reports</p>
     </div>
-    <div class="d-flex align-items-center gap-3">
+    <div class="page-actions">
         <!-- Currency Display -->
         <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="fas fa-coins me-2"></i>
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-coins me-1"></i>
                 {{ CurrencyHelper::getSymbol() }} {{ CurrencyHelper::getUserCurrency() }}
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
@@ -40,11 +40,12 @@
 </div>
 
 <!-- Filter Form -->
+
 <form method="GET" action="{{ route('finances.index') }}" class="mb-4">
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label for="year" class="form-label">Year</label>
                     <select class="form-select" id="year" name="year">
                         @for($y = date('Y'); $y >= date('Y') - 5; $y--)
@@ -52,7 +53,7 @@
                         @endfor
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label for="month" class="form-label">Month (Optional)</label>
                     <select class="form-select" id="month" name="month">
                         <option value="">All Months</option>
@@ -61,14 +62,14 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-filter me-2"></i>Filter
+                        <i class="fas fa-filter me-1"></i>Filter
                     </button>
                 </div>
-                <div class="col-md-4 text-end">
-                    <a href="{{ route('finances.index') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-redo me-2"></i>Reset
+                <div class="col-6 col-md-2">
+                    <a href="{{ route('finances.index') }}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-redo me-1"></i>Reset
                     </a>
                 </div>
             </div>

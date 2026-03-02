@@ -4,16 +4,16 @@
 
 @section('content')
 <!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <div>
-        <h4 class="mb-0">Income</h4>
-        <p class="text-muted mb-0">Track all your income sources</p>
+        <h1 class="page-title">Income</h1>
+        <p class="page-subtitle">Track all your income sources</p>
     </div>
-    <div class="d-flex gap-2">
-        <a href="{{ route('income.categories.index') }}" class="btn btn-outline-secondary">
+    <div class="page-actions">
+        <a href="{{ route('income.categories.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-tags me-1"></i> Categories
         </a>
-        <a href="{{ route('income.create') }}" class="btn btn-primary">
+        <a href="{{ route('income.create') }}" class="btn btn-primary btn-sm">
             <i class="fas fa-plus me-1"></i> Add Income
         </a>
     </div>
@@ -65,6 +65,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         @if($incomes->count() > 0)
+        <div class="table-responsive">
         <table class="table table-hover mb-0">
                 <thead>
                     <tr>
@@ -141,6 +142,7 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
         @else
         <div class="text-center py-5">
             <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
