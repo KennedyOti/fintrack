@@ -24,6 +24,10 @@
                        data-bs-toggle="tab" role="tab">
                         <i class="fas fa-building me-2"></i> Business
                     </a>
+                    <a href="#documents"     class="list-group-item list-group-item-action {{ $activeTab === 'documents'      ? 'active' : '' }}"
+                       data-bs-toggle="tab" role="tab">
+                        <i class="fas fa-file-invoice me-2"></i> Documents
+                    </a>
                     <a href="#preferences"   class="list-group-item list-group-item-action {{ $activeTab === 'preferences'    ? 'active' : '' }}"
                        data-bs-toggle="tab" role="tab">
                         <i class="fas fa-cog me-2"></i> Preferences
@@ -69,9 +73,10 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <label for="phone" class="form-label">Personal Phone</label>
                                     <input type="text" class="form-control" id="phone" name="phone"
                                            value="{{ old('phone', $user->phone) }}" placeholder="+1 234 567 8900">
+                                    <div class="form-text">Used for account contact only. Add a business phone on the Business tab.</div>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end">
@@ -86,6 +91,66 @@
 
             {{-- ════ Business ════ --}}
             <div class="tab-pane fade {{ $activeTab === 'business' ? 'show active' : '' }}" id="business" role="tabpanel">
+
+                {{-- Logo card --}}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-image me-2" style="color:var(--ft-teal);"></i>Business Logo</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted" style="font-size:13px;">Your logo will appear on all quotes and invoices. PNG or JPG, max 2 MB.</p>
+
+                        <div class="d-flex align-items-center gap-4 flex-wrap mb-3">
+                            {{-- Current logo preview --}}
+                            <div id="logoPreviewWrap" style="width:140px;height:80px;border:2px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f8fafc;">
+                                @if($user->logo_path && Storage::disk('public')->exists($user->logo_path))
+                                    <img id="logoPreview" src="{{ Storage::url($user->logo_path) }}" alt="Logo" style="max-width:130px;max-height:72px;object-fit:contain;">
+                                @else
+                                    <div id="logoPlaceholder" style="text-align:center;color:#94a3b8;">
+                                        <i class="fas fa-image fa-2x mb-1"></i>
+                                        <div style="font-size:11px;">No logo</div>
+                                    </div>
+                                    <img id="logoPreview" src="" alt="Logo" style="max-width:130px;max-height:72px;object-fit:contain;display:none;">
+                                @endif
+                            </div>
+
+                            <div class="d-flex flex-column gap-2">
+                                <form action="{{ route('settings.logo.upload') }}" method="POST" enctype="multipart/form-data" id="logoUploadForm">
+                                    @csrf
+                                    <label class="btn btn-outline-primary btn-sm mb-0" style="cursor:pointer;">
+                                        <i class="fas fa-upload me-1"></i>{{ $user->logo_path ? 'Replace Logo' : 'Upload Logo' }}
+                                        <input type="file" name="logo" id="logoInput" accept="image/*" style="display:none;" onchange="previewLogo(this)">
+                                    </label>
+                                </form>
+
+                                @if($user->logo_path)
+                                <form action="{{ route('settings.logo.remove') }}" method="POST" id="logoRemoveForm">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                                            onclick="return confirm('Remove your business logo?')">
+                                        <i class="fas fa-trash me-1"></i>Remove Logo
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Confirm-upload button (shown after file selected) --}}
+                        <div id="uploadConfirmArea" style="display:none;">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('logoUploadForm').submit();">
+                                <i class="fas fa-save me-1"></i>Save Logo
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="cancelLogoSelect()">Cancel</button>
+                        </div>
+
+                        @error('logo')
+                            <div class="text-danger mt-2" style="font-size:13px;">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                {{-- Business info card --}}
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white py-3">
                         <h5 class="mb-0"><i class="fas fa-building me-2" style="color:var(--ft-teal);"></i>Business Information</h5>
@@ -94,10 +159,18 @@
                         <form action="{{ route('settings.update') }}" method="POST">
                             @csrf
                             @method('PUT')
-                            <div class="mb-3">
-                                <label for="business_name" class="form-label">Business Name</label>
-                                <input type="text" class="form-control" id="business_name" name="business_name"
-                                       value="{{ old('business_name', $user->business_name) }}" placeholder="Your Business Name">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="business_name" class="form-label">Business Name</label>
+                                    <input type="text" class="form-control" id="business_name" name="business_name"
+                                           value="{{ old('business_name', $user->business_name) }}" placeholder="Your Business Name">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="business_phone" class="form-label">Business Phone</label>
+                                    <input type="text" class="form-control" id="business_phone" name="business_phone"
+                                           value="{{ old('business_phone', $user->business_phone) }}" placeholder="+1 234 567 8900">
+                                    <div class="form-text">Shown on quotes and invoices.</div>
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="tax_number" class="form-label">Tax Number / VAT ID</label>
@@ -111,12 +184,262 @@
                             </div>
                             <div class="d-flex justify-content-end">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Save Changes
+                                    <i class="fas fa-save me-2"></i>Save Business Info
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
+            </div>
+
+            {{-- ════ Documents ════ --}}
+            <div class="tab-pane fade {{ $activeTab === 'documents' ? 'show active' : '' }}" id="documents" role="tabpanel">
+                @php $ds = $user->getDocSettings(); @endphp
+                <form action="{{ route('settings.documents.update') }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    {{-- Layout templates --}}
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0"><i class="fas fa-layout me-2" style="color:var(--ft-teal);"></i>Layout Template</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3" style="font-size:13px;">Choose how your quotes and invoices are arranged.</p>
+                            <div class="row g-3">
+                                {{-- Classic --}}
+                                <div class="col-md-4">
+                                    <label class="doc-layout-card {{ $ds['layout'] === 'classic' ? 'selected' : '' }}">
+                                        <input type="radio" name="layout" value="classic" {{ $ds['layout'] === 'classic' ? 'checked' : '' }}>
+                                        <div class="doc-layout-preview classic-preview">
+                                            <div class="dlp-header" style="background:var(--doc-primary, #0B2A4A);">
+                                                <div class="dlp-biz">Business</div>
+                                                <div class="dlp-doc">INVOICE</div>
+                                            </div>
+                                            <div class="dlp-body">
+                                                <div class="dlp-row">
+                                                    <div class="dlp-box" style="border-left:2px solid var(--doc-accent, #0E7490);">From</div>
+                                                    <div class="dlp-box">To</div>
+                                                    <div class="dlp-box" style="border-left:2px solid var(--doc-primary, #0B2A4A);">Details</div>
+                                                </div>
+                                                <div class="dlp-items"></div>
+                                                <div class="dlp-summary"></div>
+                                            </div>
+                                        </div>
+                                        <div class="doc-layout-label">
+                                            <strong>Classic</strong>
+                                            <div class="text-muted" style="font-size:11px;">Bold header · From/To/Details row · Items · Summary</div>
+                                        </div>
+                                    </label>
+                                </div>
+                                {{-- Modern --}}
+                                <div class="col-md-4">
+                                    <label class="doc-layout-card {{ $ds['layout'] === 'modern' ? 'selected' : '' }}">
+                                        <input type="radio" name="layout" value="modern" {{ $ds['layout'] === 'modern' ? 'checked' : '' }}>
+                                        <div class="doc-layout-preview">
+                                            <div class="dlp-header modern-hdr" style="border-bottom:3px solid var(--doc-accent, #0E7490);">
+                                                <div class="dlp-logo-box">LOGO</div>
+                                                <div class="dlp-doc-modern" style="color:var(--doc-primary, #0B2A4A);">INVOICE</div>
+                                            </div>
+                                            <div class="dlp-body">
+                                                <div class="dlp-row">
+                                                    <div class="dlp-box">From</div>
+                                                    <div class="dlp-box">To</div>
+                                                    <div class="dlp-box">Details</div>
+                                                </div>
+                                                <div class="dlp-items"></div>
+                                                <div class="dlp-summary"></div>
+                                            </div>
+                                        </div>
+                                        <div class="doc-layout-label">
+                                            <strong>Modern</strong>
+                                            <div class="text-muted" style="font-size:11px;">White header with logo · Accent border · Clean sections</div>
+                                        </div>
+                                    </label>
+                                </div>
+                                {{-- Minimal --}}
+                                <div class="col-md-4">
+                                    <label class="doc-layout-card {{ $ds['layout'] === 'minimal' ? 'selected' : '' }}">
+                                        <input type="radio" name="layout" value="minimal" {{ $ds['layout'] === 'minimal' ? 'checked' : '' }}>
+                                        <div class="doc-layout-preview">
+                                            <div class="dlp-header minimal-hdr">
+                                                <div class="dlp-biz" style="color:#111;">Business</div>
+                                                <div class="dlp-doc" style="color:var(--doc-accent, #0E7490);">INVOICE</div>
+                                            </div>
+                                            <div class="dlp-body">
+                                                <div class="dlp-row">
+                                                    <div class="dlp-box">From</div>
+                                                    <div class="dlp-box">To</div>
+                                                    <div class="dlp-box">Details</div>
+                                                </div>
+                                                <div class="dlp-items"></div>
+                                                <div class="dlp-summary"></div>
+                                            </div>
+                                        </div>
+                                        <div class="doc-layout-label">
+                                            <strong>Minimal</strong>
+                                            <div class="text-muted" style="font-size:11px;">Borderless white · Typography-first · Simple lines</div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Colors --}}
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0"><i class="fas fa-palette me-2" style="color:var(--ft-teal);"></i>Brand Colours</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-4" style="font-size:13px;">These colours are applied to your PDF documents. Click any swatch to pick a custom colour.</p>
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Primary Colour</label>
+                                    <div class="form-text mb-2">Header background, table headers</div>
+                                    <div class="color-picker-wrap">
+                                        <input type="color" class="color-thumb" id="primary_color_picker"
+                                               value="{{ $ds['primary_color'] }}"
+                                               oninput="syncColor('primary_color', this.value)">
+                                        <input type="text" class="form-control form-control-sm color-hex-input"
+                                               id="primary_color_hex" name="primary_color"
+                                               value="{{ $ds['primary_color'] }}"
+                                               oninput="syncColorFromHex('primary_color', this.value)"
+                                               maxlength="7" placeholder="#0B2A4A">
+                                    </div>
+                                    <div class="color-swatches mt-2">
+                                        @foreach(['#0B2A4A','#1e3a5f','#1a1a2e','#2d3748','#374151','#7c3aed','#991b1b','#065f46'] as $c)
+                                            <span class="color-swatch" style="background:{{ $c }};" onclick="syncColor('primary_color','{{ $c }}')"></span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Accent Colour</label>
+                                    <div class="form-text mb-2">Separator bars, left borders on info boxes</div>
+                                    <div class="color-picker-wrap">
+                                        <input type="color" class="color-thumb" id="accent_color_picker"
+                                               value="{{ $ds['accent_color'] }}"
+                                               oninput="syncColor('accent_color', this.value)">
+                                        <input type="text" class="form-control form-control-sm color-hex-input"
+                                               id="accent_color_hex" name="accent_color"
+                                               value="{{ $ds['accent_color'] }}"
+                                               oninput="syncColorFromHex('accent_color', this.value)"
+                                               maxlength="7" placeholder="#0E7490">
+                                    </div>
+                                    <div class="color-swatches mt-2">
+                                        @foreach(['#0E7490','#0284c7','#059669','#d97706','#dc2626','#7c3aed','#db2777','#0f766e'] as $c)
+                                            <span class="color-swatch" style="background:{{ $c }};" onclick="syncColor('accent_color','{{ $c }}')"></span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Highlight Colour</label>
+                                    <div class="form-text mb-2">Document type label (INVOICE / QUOTE)</div>
+                                    <div class="color-picker-wrap">
+                                        <input type="color" class="color-thumb" id="highlight_color_picker"
+                                               value="{{ $ds['highlight_color'] }}"
+                                               oninput="syncColor('highlight_color', this.value)">
+                                        <input type="text" class="form-control form-control-sm color-hex-input"
+                                               id="highlight_color_hex" name="highlight_color"
+                                               value="{{ $ds['highlight_color'] }}"
+                                               oninput="syncColorFromHex('highlight_color', this.value)"
+                                               maxlength="7" placeholder="#22D3EE">
+                                    </div>
+                                    <div class="color-swatches mt-2">
+                                        @foreach(['#22D3EE','#38bdf8','#34d399','#fbbf24','#fb7185','#a78bfa','#f472b6','#ffffff'] as $c)
+                                            <span class="color-swatch" style="background:{{ $c }};border:1px solid #e2e8f0;" onclick="syncColor('highlight_color','{{ $c }}')"></span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Live preview strip --}}
+                            <div class="mt-4">
+                                <label class="form-label fw-semibold mb-2">Preview</label>
+                                <div id="colorPreviewStrip" style="border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;">
+                                    <div id="previewHeader" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:{{ $ds['primary_color'] }};">
+                                        <span style="color:#fff;font-weight:700;font-size:14px;">{{ $user->business_name ?? 'Your Business' }}</span>
+                                        <span id="previewLabel" style="font-weight:700;font-size:18px;letter-spacing:2px;color:{{ $ds['highlight_color'] }};">INVOICE</span>
+                                    </div>
+                                    <div id="previewBar" style="height:3px;background:{{ $ds['accent_color'] }};"></div>
+                                    <div style="padding:10px 16px;background:#f8fafc;display:flex;gap:8px;">
+                                        <div style="flex:1;background:#fff;border-radius:4px;padding:8px;border-left:3px solid {{ $ds['accent_color'] }};font-size:11px;">Prepared By</div>
+                                        <div style="flex:1;background:#fff;border-radius:4px;padding:8px;border-left:3px solid {{ $ds['accent_color'] }};font-size:11px;">Prepared For</div>
+                                        <div style="flex:1;background:#fff;border-radius:4px;padding:8px;border-left:3px solid {{ $ds['primary_color'] }};font-size:11px;">Details</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Font --}}
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0"><i class="fas fa-font me-2" style="color:var(--ft-teal);"></i>Font Style</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="font-option-card {{ $ds['font'] === 'sans' ? 'selected' : '' }}">
+                                        <input type="radio" name="font" value="sans" {{ $ds['font'] === 'sans' ? 'checked' : '' }}>
+                                        <div class="font-sample" style="font-family:Arial,sans-serif;">Aa</div>
+                                        <div class="font-label"><strong>Sans Serif</strong><br><span class="text-muted" style="font-size:11px;">Clean &amp; modern (DejaVu Sans)</span></div>
+                                    </label>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="font-option-card {{ $ds['font'] === 'serif' ? 'selected' : '' }}">
+                                        <input type="radio" name="font" value="serif" {{ $ds['font'] === 'serif' ? 'checked' : '' }}>
+                                        <div class="font-sample" style="font-family:Georgia,serif;">Aa</div>
+                                        <div class="font-label"><strong>Serif</strong><br><span class="text-muted" style="font-size:11px;">Traditional &amp; elegant (DejaVu Serif)</span></div>
+                                    </label>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="font-option-card {{ $ds['font'] === 'mono' ? 'selected' : '' }}">
+                                        <input type="radio" name="font" value="mono" {{ $ds['font'] === 'mono' ? 'checked' : '' }}>
+                                        <div class="font-sample" style="font-family:Courier,monospace;">Aa</div>
+                                        <div class="font-label"><strong>Monospace</strong><br><span class="text-muted" style="font-size:11px;">Technical &amp; precise (Courier)</span></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Logo + Footer note --}}
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0"><i class="fas fa-sliders me-2" style="color:var(--ft-teal);"></i>Other Options</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                           id="show_logo" name="show_logo" value="1"
+                                           {{ $ds['show_logo'] ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="show_logo">
+                                        <strong>Show logo on documents</strong>
+                                        @if(!$user->logo_path)
+                                            <span class="badge bg-warning text-dark ms-1" style="font-size:10px;">No logo uploaded</span>
+                                        @endif
+                                    </label>
+                                </div>
+                                <div class="form-text">When enabled, your business logo appears in the document header.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="footer_note" class="form-label fw-semibold">Footer Note</label>
+                                <input type="text" class="form-control" id="footer_note" name="footer_note"
+                                       value="{{ old('footer_note', $ds['footer_note']) }}"
+                                       placeholder="Thank you for your business." maxlength="300">
+                                <div class="form-text">Shown at the bottom of every quote and invoice PDF.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Document Settings
+                        </button>
+                    </div>
+                </form>
             </div>
 
             {{-- ════ Preferences ════ --}}
@@ -252,7 +575,6 @@
                         </div>
                         <div class="card-body p-0">
 
-                            {{-- How it works banner --}}
                             <div class="px-4 py-3" style="background:rgba(14,116,144,.05);border-bottom:1px solid var(--border);">
                                 <div class="d-flex gap-3 align-items-start">
                                     <i class="fas fa-info-circle mt-1" style="color:var(--ft-teal);flex-shrink:0;"></i>
@@ -266,7 +588,6 @@
                                 </div>
                             </div>
 
-                            {{-- Table header --}}
                             <div class="notif-settings-header">
                                 <div class="notif-settings-label">Alert Type</div>
                                 <div class="notif-settings-col text-center">In-App</div>
@@ -274,7 +595,6 @@
                                 <div class="notif-settings-col text-center">Timing</div>
                             </div>
 
-                            {{-- ── Invoice Overdue ── --}}
                             <div class="notif-settings-row">
                                 <div class="notif-settings-label">
                                     <div class="notif-settings-icon" style="background:rgba(244,63,94,.12);">
@@ -304,7 +624,6 @@
                                 </div>
                             </div>
 
-                            {{-- ── Quote Expiring ── --}}
                             <div class="notif-settings-row">
                                 <div class="notif-settings-label">
                                     <div class="notif-settings-icon" style="background:rgba(245,158,11,.12);">
@@ -340,7 +659,6 @@
                                 </div>
                             </div>
 
-                            {{-- ── Debt Due ── --}}
                             <div class="notif-settings-row">
                                 <div class="notif-settings-label">
                                     <div class="notif-settings-icon" style="background:rgba(249,115,22,.12);">
@@ -376,7 +694,6 @@
                                 </div>
                             </div>
 
-                            {{-- ── Savings Goal ── --}}
                             <div class="notif-settings-row">
                                 <div class="notif-settings-label">
                                     <div class="notif-settings-icon" style="background:rgba(34,197,94,.12);">
@@ -406,7 +723,6 @@
                                 </div>
                             </div>
 
-                            {{-- ── Project Deadline ── --}}
                             <div class="notif-settings-row">
                                 <div class="notif-settings-label">
                                     <div class="notif-settings-icon" style="background:rgba(139,92,246,.12);">
@@ -442,7 +758,6 @@
                                 </div>
                             </div>
 
-                            {{-- ── Budget Alert ── --}}
                             <div class="notif-settings-row" style="border-bottom:none;">
                                 <div class="notif-settings-label">
                                     <div class="notif-settings-icon" style="background:rgba(239,68,68,.12);">
@@ -488,6 +803,89 @@
         </div>
     </div>
 </div>
+
+<style>
+/* ── Document layout cards ─────────────────────────── */
+.doc-layout-card {
+    display: block;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .15s, box-shadow .15s;
+}
+.doc-layout-card:hover { border-color: var(--ft-teal); }
+.doc-layout-card input[type=radio] { display: none; }
+.doc-layout-card.selected,
+.doc-layout-card:has(input:checked) {
+    border-color: var(--ft-teal);
+    box-shadow: 0 0 0 3px rgba(14,116,144,.15);
+}
+.doc-layout-preview {
+    background: #f1f5f9;
+    padding: 8px;
+    min-height: 120px;
+}
+.dlp-header {
+    border-radius: 4px;
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    background: #0B2A4A;
+}
+.dlp-biz { color: #fff; font-size: 9px; font-weight: 700; }
+.dlp-doc { color: #22D3EE; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+.modern-hdr { background: #fff !important; border-bottom: 2px solid #0E7490; }
+.dlp-logo-box { width: 28px; height: 16px; background: #e2e8f0; border-radius: 3px; font-size: 7px; color: #94a3b8; display: flex; align-items:center; justify-content:center; }
+.dlp-doc-modern { font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+.minimal-hdr { background: #fff !important; border-bottom: 1px solid #e2e8f0; }
+.dlp-body { padding: 4px 0; }
+.dlp-row { display: flex; gap: 4px; margin-bottom: 5px; }
+.dlp-box { flex: 1; background: #fff; border-radius: 3px; padding: 5px 4px; font-size: 7px; color: #64748b; border-left: 2px solid #e2e8f0; }
+.dlp-items { height: 24px; background: #fff; border-radius: 3px; margin-bottom: 5px; }
+.dlp-summary { height: 18px; background: #fff; border-radius: 3px; width: 55%; margin-left: auto; }
+.doc-layout-label { padding: 10px 12px 12px; background: #fff; }
+
+/* ── Font option cards ──────────────────────────────── */
+.font-option-card {
+    display: block;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    transition: border-color .15s, box-shadow .15s;
+}
+.font-option-card:hover { border-color: var(--ft-teal); }
+.font-option-card input[type=radio] { display: none; }
+.font-option-card.selected,
+.font-option-card:has(input:checked) {
+    border-color: var(--ft-teal);
+    box-shadow: 0 0 0 3px rgba(14,116,144,.15);
+}
+.font-sample { font-size: 36px; line-height: 1; margin-bottom: 8px; color: var(--text-h); }
+.font-label { font-size: 13px; }
+
+/* ── Color pickers ──────────────────────────────────── */
+.color-picker-wrap { display: flex; align-items: center; gap: 8px; }
+.color-thumb {
+    width: 36px; height: 36px;
+    padding: 2px; border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer;
+    flex-shrink: 0;
+}
+.color-hex-input { font-family: monospace; font-size: 13px; }
+.color-swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.color-swatch {
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform .1s;
+}
+.color-swatch:hover { transform: scale(1.2); }
+</style>
 @endsection
 
 @section('scripts')
@@ -507,6 +905,22 @@ document.addEventListener('DOMContentLoaded', function () {
         link.addEventListener('shown.bs.tab', function () {
             var id = link.getAttribute('href').replace('#', '');
             history.replaceState(null, '', '?tab=' + id);
+        });
+    });
+
+    // ── Layout card selection ──────────────────────────────────────────────
+    document.querySelectorAll('.doc-layout-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+            document.querySelectorAll('.doc-layout-card').forEach(function (c) { c.classList.remove('selected'); });
+            card.classList.add('selected');
+        });
+    });
+
+    // ── Font card selection ────────────────────────────────────────────────
+    document.querySelectorAll('.font-option-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+            document.querySelectorAll('.font-option-card').forEach(function (c) { c.classList.remove('selected'); });
+            card.classList.add('selected');
         });
     });
 
@@ -552,7 +966,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 btn.disabled  = false;
                 btn.innerHTML = origHtml;
 
-                // Show a toast-style alert
                 var alertClass = data.new_count > 0 ? 'alert-success' : 'alert-info';
                 var icon       = data.new_count > 0 ? 'fa-circle-check' : 'fa-info-circle';
                 var div        = document.createElement('div');
@@ -565,7 +978,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 var container = document.querySelector('.page-header');
                 if (container) container.insertAdjacentElement('afterend', div);
 
-                // Refresh bell badge
                 if (data.new_count > 0) {
                     var badge = document.querySelector('.notif-badge');
                     if (badge) {
@@ -593,5 +1005,58 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+// ── Logo preview ────────────────────────────────────────────────────────────
+function previewLogo(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var preview = document.getElementById('logoPreview');
+            var placeholder = document.getElementById('logoPlaceholder');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
+            document.getElementById('uploadConfirmArea').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function cancelLogoSelect() {
+    var input = document.getElementById('logoInput');
+    input.value = '';
+    document.getElementById('uploadConfirmArea').style.display = 'none';
+}
+
+// ── Color pickers ────────────────────────────────────────────────────────────
+function syncColor(field, value) {
+    var picker = document.getElementById(field + '_picker');
+    var hex    = document.getElementById(field + '_hex');
+    if (picker) picker.value = value;
+    if (hex)    hex.value    = value;
+    updateColorPreview();
+}
+
+function syncColorFromHex(field, value) {
+    if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+        var picker = document.getElementById(field + '_picker');
+        if (picker) picker.value = value;
+        updateColorPreview();
+    }
+}
+
+function updateColorPreview() {
+    var primary   = document.getElementById('primary_color_hex')   ? document.getElementById('primary_color_hex').value   : '#0B2A4A';
+    var accent    = document.getElementById('accent_color_hex')    ? document.getElementById('accent_color_hex').value    : '#0E7490';
+    var highlight = document.getElementById('highlight_color_hex') ? document.getElementById('highlight_color_hex').value : '#22D3EE';
+
+    var header = document.getElementById('previewHeader');
+    var bar    = document.getElementById('previewBar');
+    var label  = document.getElementById('previewLabel');
+
+    if (header) header.style.background = primary;
+    if (bar)    bar.style.background    = accent;
+    if (label)  label.style.color       = highlight;
+}
 </script>
 @endsection

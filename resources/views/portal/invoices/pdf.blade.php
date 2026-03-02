@@ -1,66 +1,88 @@
+@php
+    // ── Doc settings with defaults ──────────────────────────────────────────
+    $ds         = $docSettings ?? [];
+    $primaryClr = $ds['primary_color']   ?? '#0B2A4A';
+    $accentClr  = $ds['accent_color']    ?? '#0E7490';
+    $hlClr      = $ds['highlight_color'] ?? '#22D3EE';
+    $layout     = $ds['layout']          ?? 'classic';
+    $showLogo   = $ds['show_logo']       ?? true;
+    $footerNote = $ds['footer_note']     ?? 'Thank you for your business.';
+
+    $fontMap = [
+        'sans'  => "DejaVu Sans, Arial, 'Helvetica Neue', sans-serif",
+        'serif' => "DejaVu Serif, Georgia, 'Times New Roman', serif",
+        'mono'  => "Courier New, Courier, monospace",
+    ];
+    $fontStack = $fontMap[$ds['font'] ?? 'sans'] ?? $fontMap['sans'];
+
+    $isMinimal = $layout === 'minimal';
+    $isModern  = $layout === 'modern';
+    $isClassic = $layout === 'classic';
+
+    $headerBg     = ($isMinimal || $isModern) ? '#FFFFFF' : $primaryClr;
+    $headerColor  = ($isMinimal || $isModern) ? '#0F172A' : '#FFFFFF';
+    $headerSubClr = ($isMinimal || $isModern) ? '#64748B' : 'rgba(255,255,255,0.65)';
+    $docLabelColor = ($isMinimal)             ? $accentClr : $hlClr;
+    $docNumColor  = ($isMinimal || $isModern) ? '#64748B'  : 'rgba(255,255,255,0.7)';
+    $headerBorder = ($isMinimal) ? "border-bottom:2px solid {$accentClr};" : (($isModern) ? "border-bottom:3px solid {$accentClr};" : '');
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
-        /* ── Page ─────────────────────────────────────────── */
         @page {
             size: A4 portrait;
             margin: 14mm 14mm 14mm 14mm;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: DejaVu Sans, 'Helvetica Neue', Arial, sans-serif;
+            font-family: {{ $fontStack }};
             font-size: 11px;
             line-height: 1.45;
             color: #1E293B;
             background: #fff;
         }
 
-        /* ── Header strip ─────────────────────────────────── */
+        /* ── Header ─────────────────────────────────────────── */
         .doc-header {
-            background-color: #0B2A4A;
-            padding: 18px 22px;
+            background-color: {{ $headerBg }};
+            padding: {{ $isMinimal ? '12px 0 12px 0' : '18px 22px' }};
+            {{ $headerBorder }}
         }
-
         .hdr-table { width: 100%; border-collapse: collapse; }
-        .hdr-table td { vertical-align: top; padding: 0; border: none; background: transparent; }
+        .hdr-table td { vertical-align: middle; padding: 0; border: none; background: transparent; }
 
         .biz-name {
-            font-size: 18px;
+            font-size: {{ $isMinimal ? '17px' : '18px' }};
             font-weight: bold;
-            color: #FFFFFF;
-            margin-bottom: 5px;
+            color: {{ $headerColor }};
+            margin-bottom: 4px;
             letter-spacing: -0.3px;
         }
-
         .biz-detail {
             font-size: 9.5px;
-            color: rgba(255,255,255,0.65);
+            color: {{ $headerSubClr }};
             line-height: 1.7;
         }
-
         .doc-type-label {
             font-size: 26px;
             font-weight: bold;
-            color: #22D3EE;
+            color: {{ $docLabelColor }};
             text-transform: uppercase;
             letter-spacing: 3px;
             text-align: right;
             line-height: 1;
             margin-bottom: 4px;
         }
-
         .doc-number {
             font-size: 12px;
-            color: rgba(255,255,255,0.7);
+            color: {{ $docNumColor }};
             text-align: right;
             margin-bottom: 7px;
         }
-
         .status-badge {
             display: inline-block;
             padding: 3px 10px;
@@ -71,61 +93,51 @@
             letter-spacing: 0.5px;
         }
         .status-draft     { background-color: #64748B; color: #fff; }
-        .status-sent      { background-color: #0E7490; color: #fff; }
+        .status-sent      { background-color: {{ $accentClr }}; color: #fff; }
         .status-partial   { background-color: #F59E0B; color: #fff; }
         .status-paid      { background-color: #22C55E; color: #fff; }
         .status-overdue   { background-color: #F43F5E; color: #fff; }
         .status-cancelled { background-color: #374151; color: #fff; }
 
-        /* ── Teal accent bar ──────────────────────────────── */
-        .accent-bar {
-            height: 3px;
-            background-color: #0E7490;
-            margin-bottom: 14px;
-        }
+        /* ── Accent bar ──────────────────────────────────────── */
+        .accent-bar { height: 3px; background-color: {{ $accentClr }}; margin-bottom: 14px; }
 
-        /* ── Info section ─────────────────────────────────── */
+        /* ── 3-column info row: From | Bill To | Details ─────── */
         .info-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
         .info-table td { vertical-align: top; border: none; }
 
         .info-cell {
             background-color: #F8FAFC;
             border-radius: 5px;
-            padding: 11px 13px;
+            padding: 10px 12px;
         }
-        .info-cell-left  { border-left: 3px solid #0E7490; }
-        .info-cell-right { border-left: 3px solid #0B2A4A; }
+        .info-cell-from    { border-left: 3px solid {{ $primaryClr }}; }
+        .info-cell-to      { border-left: 3px solid {{ $accentClr }}; }
+        .info-cell-details { border-left: 3px solid {{ $primaryClr }}; }
 
         .info-label {
-            font-size: 8.5px;
+            font-size: 8px;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #64748B;
             font-weight: bold;
             margin-bottom: 6px;
         }
-
         .client-name {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             color: #0F172A;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
+        .client-detail { font-size: 9.5px; color: #64748B; line-height: 1.6; }
 
-        .client-detail {
-            font-size: 10px;
-            color: #64748B;
-            line-height: 1.6;
-        }
-
-        .meta-row { width: 100%; margin-bottom: 4px; }
+        .meta-row { width: 100%; margin-bottom: 3px; }
         .meta-row:last-child { margin-bottom: 0; }
-
-        .meta-l { display: inline-block; width: 44%; color: #64748B; font-size: 10px; }
-        .meta-v { font-weight: 600; color: #1E293B; font-size: 10px; }
+        .meta-l { display: inline-block; width: 50%; color: #64748B; font-size: 9.5px; }
+        .meta-v { font-weight: 600; color: #1E293B; font-size: 9.5px; }
         .meta-v-overdue { color: #F43F5E; }
 
-        /* ── Items table ──────────────────────────────────── */
+        /* ── Items table ─────────────────────────────────────── */
         .section-label {
             font-size: 8.5px;
             text-transform: uppercase;
@@ -134,15 +146,8 @@
             font-weight: bold;
             margin-bottom: 5px;
         }
-
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 14px;
-        }
-
-        .items-table thead tr { background-color: #0B2A4A; }
-
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+        .items-table thead tr { background-color: {{ $primaryClr }}; }
         .items-table th {
             padding: 9px 10px;
             font-size: 9px;
@@ -152,18 +157,16 @@
             color: rgba(255,255,255,0.85);
             text-align: left;
         }
-
         .items-table tbody td {
             padding: 8px 10px;
             font-size: 10.5px;
             color: #334155;
             border-bottom: 1px solid #E2E8F0;
         }
-
         .items-table tbody tr:nth-child(even) td { background-color: #F8FAFC; }
         .items-table tbody tr:last-child td { border-bottom: none; }
 
-        /* ── Bottom: notes + summary ──────────────────────── */
+        /* ── Bottom area ─────────────────────────────────────── */
         .bottom-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
         .bottom-table td { vertical-align: top; border: none; }
 
@@ -173,40 +176,23 @@
             border-radius: 5px;
             padding: 10px 12px;
         }
-        .notes-title {
-            font-size: 8.5px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #92400E;
-            margin-bottom: 5px;
-        }
-        .notes-text { font-size: 10px; color: #78350F; line-height: 1.5; }
+        .notes-title { font-size: 8.5px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #92400E; margin-bottom: 5px; }
+        .notes-text  { font-size: 10px; color: #78350F; line-height: 1.5; }
 
-        .summary-box {
-            background-color: #F8FAFC;
-            border-radius: 5px;
-            padding: 11px 13px;
-        }
-
+        .summary-box { background-color: #F8FAFC; border-radius: 5px; padding: 11px 13px; }
         .sum-row { width: 100%; border-bottom: 1px solid #E2E8F0; padding: 4px 0; }
         .sum-row:last-child { border-bottom: none; }
-
         .sum-l { display: inline-block; width: 55%; color: #64748B; font-size: 10.5px; }
         .sum-v { font-weight: 600; font-size: 10.5px; color: #1E293B; }
-
-        .sum-divider { border-top: 2px solid #0B2A4A; padding-top: 6px; margin-top: 2px; }
-
+        .sum-divider { border-top: 2px solid {{ $primaryClr }}; padding-top: 6px; margin-top: 2px; }
         .sum-l-total { display: inline-block; width: 55%; font-weight: bold; font-size: 11px; color: #0F172A; }
-        .sum-v-total { font-weight: bold; font-size: 14px; color: #0B2A4A; }
-
-        .sum-v-paid   { color: #22C55E; }
-
+        .sum-v-total { font-weight: bold; font-size: 14px; color: {{ $primaryClr }}; }
+        .sum-v-paid  { color: #22C55E; }
         .sum-balance { border-top: 2px solid #22C55E; padding-top: 6px; margin-top: 4px; }
         .sum-l-balance { display: inline-block; width: 55%; font-weight: bold; font-size: 11px; color: #0F172A; }
         .sum-v-balance { font-weight: bold; font-size: 13px; color: #22C55E; }
 
-        /* ── Tax info ─────────────────────────────────────── */
+        /* ── Tax info box ────────────────────────────────────── */
         .tax-info {
             background-color: #F1F5F9;
             border-radius: 5px;
@@ -217,34 +203,42 @@
         }
         .tax-info strong { color: #334155; }
 
-        /* ── Footer ───────────────────────────────────────── */
-        .doc-footer {
-            border-top: 1px solid #E2E8F0;
-            padding-top: 9px;
-            text-align: center;
-        }
+        /* ── Footer ──────────────────────────────────────────── */
+        .doc-footer { border-top: 1px solid #E2E8F0; padding-top: 9px; text-align: center; }
         .footer-biz { font-size: 10px; font-weight: 600; color: #475569; margin-bottom: 2px; }
         .footer-sub { font-size: 8.5px; color: #94A3B8; }
     </style>
 </head>
 <body>
 
-{{-- ── Header ──────────────────────────────────────────────────── --}}
+{{-- ── Header ───────────────────────────────────────────────────── --}}
 <div class="doc-header">
     <table class="hdr-table">
         <tr>
-            <td style="width:55%;">
-                <div class="biz-name">{{ $businessInfo['business_name'] ?? 'Your Business' }}</div>
+            @if(($isModern || $isClassic) && ($logoBase64 ?? null) && $showLogo)
+            <td style="width:{{ $isModern ? '70px' : '65px' }}; padding-right:12px; vertical-align:middle;">
+                <img src="{{ $logoBase64 }}" alt="Logo" style="max-height:{{ $isModern ? '52px' : '46px' }};max-width:{{ $isModern ? '120px' : '110px' }};">
+            </td>
+            @endif
+
+            <td>
+                <div class="biz-name">{{ $businessInfo['business_name'] }}</div>
                 <div class="biz-detail">
                     @if($businessInfo['business_address'])
-                        <div>{{ str_replace(["\r\n", "\n", "\r"], ' &bull; ', trim(e($businessInfo['business_address']))) }}</div>
+                        {{ str_replace(["\r\n", "\n", "\r"], ' · ', trim($businessInfo['business_address'])) }}&nbsp;
                     @endif
-                    @if($businessInfo['email']) <div>{{ $businessInfo['email'] }}</div> @endif
-                    @if($businessInfo['phone']) <div>{{ $businessInfo['phone'] }}</div> @endif
-                    @if($businessInfo['tax_number']) <div>Tax ID: {{ $businessInfo['tax_number'] }}</div> @endif
+                    @if($businessInfo['email']) {{ $businessInfo['email'] }} @endif
+                    @if($businessInfo['phone']) &nbsp;·&nbsp; {{ $businessInfo['phone'] }} @endif
+                    @if($businessInfo['tax_number']) &nbsp;·&nbsp; Tax ID: {{ $businessInfo['tax_number'] }} @endif
                 </div>
             </td>
-            <td style="width:45%; vertical-align:top; text-align:right;">
+
+            <td style="width:200px; vertical-align:top; text-align:right;">
+                @if($isMinimal && ($logoBase64 ?? null) && $showLogo)
+                <div style="text-align:right; margin-bottom:6px;">
+                    <img src="{{ $logoBase64 }}" alt="Logo" style="max-height:40px;max-width:100px;">
+                </div>
+                @endif
                 <div class="doc-type-label">Invoice</div>
                 <div class="doc-number"># {{ $invoice->invoice_number }}</div>
                 <span class="status-badge status-{{ $invoice->status }}">{{ ucfirst($invoice->status) }}</span>
@@ -255,11 +249,27 @@
 
 <div class="accent-bar"></div>
 
-{{-- ── Bill To + Invoice Meta ──────────────────────────────────── --}}
+{{-- ── 3-column info: From | Bill To | Invoice Details ───────────── --}}
 <table class="info-table">
     <tr>
-        <td style="width:48%;">
-            <div class="info-cell info-cell-left">
+        {{-- From (business) --}}
+        <td style="width:31%;">
+            <div class="info-cell info-cell-from">
+                <div class="info-label">From</div>
+                <div class="client-name">{{ $businessInfo['business_name'] }}</div>
+                <div class="client-detail">
+                    @if($businessInfo['email'])        {{ $businessInfo['email'] }}<br>        @endif
+                    @if($businessInfo['phone'])        {{ $businessInfo['phone'] }}<br>        @endif
+                    @if($businessInfo['business_address'])
+                        {{ str_replace(["\r\n", "\n", "\r"], ', ', trim($businessInfo['business_address'])) }}
+                    @endif
+                </div>
+            </div>
+        </td>
+        <td style="width:2%;"></td>
+        {{-- Bill To (client) --}}
+        <td style="width:31%;">
+            <div class="info-cell info-cell-to">
                 <div class="info-label">Bill To</div>
                 @if($invoice->client)
                     <div class="client-name">{{ $invoice->client->name }}</div>
@@ -274,12 +284,13 @@
                 @endif
             </div>
         </td>
-        <td style="width:4%;"></td>
-        <td style="width:48%;">
-            <div class="info-cell info-cell-right">
+        <td style="width:2%;"></td>
+        {{-- Invoice Details --}}
+        <td style="width:34%;">
+            <div class="info-cell info-cell-details">
                 <div class="info-label">Invoice Details</div>
                 <div class="meta-row">
-                    <span class="meta-l">Invoice Number</span>
+                    <span class="meta-l">Invoice #</span>
                     <span class="meta-v">{{ $invoice->invoice_number }}</span>
                 </div>
                 <div class="meta-row">
@@ -289,7 +300,7 @@
                 <div class="meta-row">
                     <span class="meta-l">Due Date</span>
                     <span class="meta-v {{ $invoice->isOverdue() ? 'meta-v-overdue' : '' }}">
-                        {{ $invoice->due_date->format('M d, Y') }}@if($invoice->isOverdue()) &nbsp;&#9888;@endif
+                        {{ $invoice->due_date->format('M d, Y') }}@if($invoice->isOverdue()) &#9888;@endif
                     </span>
                 </div>
                 @if($invoice->project)
@@ -364,7 +375,6 @@
                     <span class="sum-v sum-v-paid" style="float:right;">-{{ $currencySymbol }}{{ number_format($invoice->discount_amount, 2) }}</span>
                 </div>
                 @endif
-
                 <div class="sum-row sum-divider" style="border-bottom:none; margin-top:4px;">
                     <span class="sum-l-total">Total ({{ $currencyCode }})</span>
                     <span class="sum-v-total" style="float:right;">{{ $currencySymbol }}{{ number_format($invoice->total_amount, 2) }}</span>
@@ -395,9 +405,9 @@
 
 {{-- ── Footer ───────────────────────────────────────────────────── --}}
 <div class="doc-footer">
-    <div class="footer-biz">{{ $businessInfo['business_name'] ?? 'Your Business' }}</div>
+    <div class="footer-biz">{{ $businessInfo['business_name'] }}</div>
     <div class="footer-sub">
-        Thank you for your business &nbsp;&middot;&nbsp;
+        {{ $footerNote }} &nbsp;&middot;&nbsp;
         Generated by FinTrack &nbsp;&middot;&nbsp;
         {{ now()->format('M d, Y') }}
     </div>

@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class InvoiceController extends Controller
 {
@@ -335,25 +336,36 @@ class InvoiceController extends Controller
     public function downloadPdf(Invoice $invoice)
     {
         $this->authorizeInvoice($invoice);
-        
+
         $invoice->load(['client', 'project', 'items', 'payments']);
-        
-        // Get user business information for the PDF
+
         $user = Auth::user();
+
         $businessInfo = [
-            'business_name' => $user->business_name ?? $user->name,
-            'tax_number' => $user->tax_number ?? '',
+            'business_name'    => $user->business_name ?? $user->name,
+            'tax_number'       => $user->tax_number ?? '',
             'business_address' => $user->business_address ?? '',
-            'email' => $user->email,
-            'phone' => $user->phone ?? '',
+            'email'            => $user->email,
+            'phone'            => $user->business_phone ?? $user->phone ?? '',
         ];
-        
-        // Get currency symbol
-        $currencyCode = $user->currency_code ?? 'USD';
-        $currencySymbol = \App\Helpers\CurrencyHelper::getSymbol($currencyCode);
-        
-        $pdf = PDF::loadView('portal.invoices.pdf', compact('invoice', 'businessInfo', 'currencyCode', 'currencySymbol'));
-        
+
+        // Encode logo as base64 for dompdf (file:// URLs unreliable on Windows)
+        $logoBase64 = null;
+        if ($user->logo_path && Storage::disk('public')->exists($user->logo_path)) {
+            $logoData   = Storage::disk('public')->get($user->logo_path);
+            $logoMime   = Storage::disk('public')->mimeType($user->logo_path);
+            $logoBase64 = 'data:' . $logoMime . ';base64,' . base64_encode($logoData);
+        }
+
+        $docSettings    = $user->getDocSettings();
+        $currencyCode   = $user->currency_code ?? 'USD';
+        $currencySymbol = CurrencyHelper::getSymbol($currencyCode);
+
+        $pdf = PDF::loadView('portal.invoices.pdf', compact(
+            'invoice', 'businessInfo', 'currencyCode', 'currencySymbol',
+            'docSettings', 'logoBase64'
+        ));
+
         return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
     }
 

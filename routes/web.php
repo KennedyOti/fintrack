@@ -143,6 +143,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/settings/currency', [SettingsController::class, 'updateCurrency'])->name('settings.currency.update');
     Route::put('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications.update');
     Route::post('/settings/dark-mode', [SettingsController::class, 'updateDarkMode'])->name('settings.darkMode');
+    Route::post('/settings/logo', [SettingsController::class, 'uploadLogo'])->name('settings.logo.upload');
+    Route::delete('/settings/logo', [SettingsController::class, 'removeLogo'])->name('settings.logo.remove');
+    Route::put('/settings/documents', [SettingsController::class, 'updateDocuments'])->name('settings.documents.update');
 
     // Quick Add (income/expense from global modal)
     Route::post('/quick-add/income', [QuickAddController::class, 'storeIncome'])->name('quick-add.income');

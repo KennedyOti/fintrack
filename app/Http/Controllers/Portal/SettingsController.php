@@ -8,6 +8,7 @@ use App\Models\NotificationSetting;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
@@ -49,6 +50,10 @@ class SettingsController extends Controller
             $rules['business_name'] = ['nullable', 'string', 'max:255'];
         }
 
+        if ($request->has('business_phone')) {
+            $rules['business_phone'] = ['nullable', 'string', 'max:50'];
+        }
+
         if ($request->has('tax_number')) {
             $rules['tax_number'] = ['nullable', 'string', 'max:100'];
         }
@@ -73,6 +78,80 @@ class SettingsController extends Controller
         $user->update($validated);
 
         return redirect()->route('settings.index')->with('success', 'Settings updated successfully!');
+    }
+
+    /**
+     * Upload / replace the business logo.
+     */
+    public function uploadLogo(Request $request)
+    {
+        $request->validate([
+            'logo' => ['required', 'image', 'mimes:png,jpg,jpeg,svg,gif', 'max:2048'],
+        ]);
+
+        $user = Auth::user();
+
+        // Remove old logo if exists
+        if ($user->logo_path && Storage::disk('public')->exists($user->logo_path)) {
+            Storage::disk('public')->delete($user->logo_path);
+        }
+
+        $ext  = $request->file('logo')->getClientOriginalExtension();
+        $path = $request->file('logo')->storeAs('logos', $user->id . '.' . $ext, 'public');
+
+        $user->update(['logo_path' => $path]);
+
+        return redirect()->route('settings.index', ['tab' => 'business'])
+            ->with('success', 'Business logo updated successfully!');
+    }
+
+    /**
+     * Remove the business logo.
+     */
+    public function removeLogo(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->logo_path && Storage::disk('public')->exists($user->logo_path)) {
+            Storage::disk('public')->delete($user->logo_path);
+        }
+
+        $user->update(['logo_path' => null]);
+
+        return redirect()->route('settings.index', ['tab' => 'business'])
+            ->with('success', 'Business logo removed.');
+    }
+
+    /**
+     * Save document template / branding preferences.
+     */
+    public function updateDocuments(Request $request)
+    {
+        $request->validate([
+            'primary_color'   => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'accent_color'    => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'highlight_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'font'            => ['required', Rule::in(['sans', 'serif', 'mono'])],
+            'layout'          => ['required', Rule::in(['classic', 'modern', 'minimal'])],
+            'show_logo'       => ['nullable'],
+            'footer_note'     => ['nullable', 'string', 'max:300'],
+        ]);
+
+        $user = Auth::user();
+        $user->update([
+            'doc_settings' => [
+                'primary_color'   => $request->primary_color,
+                'accent_color'    => $request->accent_color,
+                'highlight_color' => $request->highlight_color,
+                'font'            => $request->font,
+                'layout'          => $request->layout,
+                'show_logo'       => (bool) $request->show_logo,
+                'footer_note'     => $request->footer_note ?? 'Thank you for your business.',
+            ],
+        ]);
+
+        return redirect()->route('settings.index', ['tab' => 'documents'])
+            ->with('success', 'Document template saved successfully!');
     }
 
     /**

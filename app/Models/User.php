@@ -19,9 +19,11 @@ class User extends Authenticatable
         'password',
         'phone',
         'business_name',
+        'business_phone',
         'tax_number',
         'business_address',
         'logo_path',
+        'doc_settings',
         'currency_code',
         'timezone',
         'role',
@@ -50,7 +52,26 @@ class User extends Authenticatable
             'otp_expires_at' => 'datetime',
             'two_factor_enabled' => 'boolean',
             'dark_mode' => 'boolean',
+            'doc_settings' => 'array',
         ];
+    }
+
+    /**
+     * Return doc_settings merged with sensible defaults.
+     */
+    public function getDocSettings(): array
+    {
+        $defaults = [
+            'primary_color'   => '#0B2A4A',
+            'accent_color'    => '#0E7490',
+            'highlight_color' => '#22D3EE',
+            'font'            => 'sans',
+            'layout'          => 'classic',
+            'show_logo'       => true,
+            'footer_note'     => 'Thank you for your business.',
+        ];
+
+        return array_merge($defaults, $this->doc_settings ?? []);
     }
 
     // Relationships
