@@ -64,8 +64,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         @if($quotes->count() > 0)
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Quote #</th>
@@ -148,8 +147,7 @@
                     </tr>
                     @endforeach
                 </tbody>
-            </table>
-        </div>
+        </table>
         @else
         <div class="text-center py-5">
             <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>

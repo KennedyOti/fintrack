@@ -50,7 +50,6 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         @if($clients->count() > 0)
-        <div class="table-responsive">
         <table class="table table-hover mb-0">
                 <thead>
                     <tr>
@@ -120,8 +119,7 @@
                     </tr>
                     @endforeach
                 </tbody>
-            </table>
-        </div>
+        </table>
         @else
         <div class="text-center py-5">
             <i class="fas fa-users fa-3x text-muted mb-3"></i>

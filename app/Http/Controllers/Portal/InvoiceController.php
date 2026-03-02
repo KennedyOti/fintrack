@@ -214,9 +214,9 @@ class InvoiceController extends Controller
     public function update(Request $request, Invoice $invoice)
     {
         $this->authorizeInvoice($invoice);
-        
+
         $oldStatus = $invoice->status;
-        
+
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'project_id' => 'nullable|exists:projects,id',
@@ -228,34 +228,51 @@ class InvoiceController extends Controller
             'total_amount' => 'required|numeric|min:0',
             'status' => 'required|in:draft,sent,partial,paid,overdue,cancelled',
             'notes' => 'nullable|string',
+            'items' => 'required|array|min:1',
+            'items.*.description' => 'required|string',
+            'items.*.quantity' => 'required|numeric|min:1',
+            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.total' => 'required|numeric|min:0',
         ]);
 
-        // Calculate paid amount from the invoice's paid_amount column
         $paidAmount = $invoice->paid_amount;
+        $items = $validated['items'];
+        unset($validated['items']);
         $validated['paid_amount'] = $paidAmount;
 
-        $invoice->update($validated);
+        DB::transaction(function () use ($invoice, $validated, $items, $oldStatus, $paidAmount) {
+            $invoice->update($validated);
 
-        // Sync DebtsReceivable based on the new status
-        $this->syncDebtsReceivable($invoice, $validated['status']);
-
-        // Only create/update income record if there are actual payments
-        if ($paidAmount > 0) {
-            // Create income record when status changes to partial or paid
-            if (in_array($validated['status'], ['partial', 'paid']) && !in_array($oldStatus, ['partial', 'paid'])) {
-                $this->createIncomeFromInvoice($invoice);
+            // Replace all invoice items
+            $invoice->items()->delete();
+            foreach ($items as $item) {
+                InvoiceItem::create([
+                    'invoice_id'  => $invoice->id,
+                    'description' => $item['description'],
+                    'quantity'    => $item['quantity'],
+                    'unit_price'  => $item['unit_price'],
+                    'total'       => $item['total'],
+                ]);
             }
 
-            // Update income record if status is already partial/paid and payments have changed
-            if (in_array($validated['status'], ['partial', 'paid'])) {
-                $this->updateIncomeFromInvoice($invoice);
-            }
-        }
+            // Sync DebtsReceivable based on the new status
+            $this->syncDebtsReceivable($invoice, $validated['status']);
 
-        // Delete income record if status changed from paid/partial to something else OR no payments exist
-        if (!in_array($validated['status'], ['partial', 'paid']) && in_array($oldStatus, ['partial', 'paid'])) {
-            Income::where('invoice_id', $invoice->id)->delete();
-        }
+            // Only create/update income record if there are actual payments
+            if ($paidAmount > 0) {
+                if (in_array($validated['status'], ['partial', 'paid']) && !in_array($oldStatus, ['partial', 'paid'])) {
+                    $this->createIncomeFromInvoice($invoice);
+                }
+                if (in_array($validated['status'], ['partial', 'paid'])) {
+                    $this->updateIncomeFromInvoice($invoice);
+                }
+            }
+
+            // Delete income record if status changed away from paid/partial
+            if (!in_array($validated['status'], ['partial', 'paid']) && in_array($oldStatus, ['partial', 'paid'])) {
+                Income::where('invoice_id', $invoice->id)->delete();
+            }
+        });
 
         return redirect()->route('invoices.index')
             ->with('success', 'Invoice updated successfully.');

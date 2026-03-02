@@ -224,98 +224,76 @@
 
 <!-- JavaScript for dynamic items -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const itemsTbody = document.getElementById('items-tbody');
-    const addItemBtn = document.getElementById('add-item');
-    const taxRateInput = document.getElementById('tax-rate');
+document.addEventListener('DOMContentLoaded', function () {
+    const itemsTbody    = document.getElementById('items-tbody');
+    const addItemBtn    = document.getElementById('add-item');
+    const taxRateInput  = document.getElementById('tax-rate');
     const discountInput = document.getElementById('discount-input');
-    
-    // Add existing items
+    const currencySymbol = @json($currencySymbol);
+
+    // Load existing items from server
     @foreach($quote->items as $item)
-    addItemRow('{{ $item->id }}', '{{ $item->description }}', {{ $item->quantity }}, {{ $item->unit_price }});
+    addItemRow({{ $item->id }}, @json($item->description), {{ $item->quantity }}, {{ $item->unit_price }});
     @endforeach
-    
-    // Add item button click handler
-    addItemBtn.addEventListener('click', function() {
+
+    addItemBtn.addEventListener('click', function () {
         addItemRow();
     });
-    
+
     function addItemRow(id = null, description = '', quantity = 1, price = 0) {
         const rowId = id || Date.now();
-        const row = document.createElement('tr');
+        const row   = document.createElement('tr');
         row.id = 'item-row-' + rowId;
+
         row.innerHTML = `
-            <td>
-                <input type="text" class="form-control" name="items[${rowId}][description]" placeholder="Item description" value="${description}" required>
-            </td>
-            <td>
-                <input type="number" class="form-control item-quantity" name="items[${rowId}][quantity]" value="${quantity}" min="1" step="1" required>
-            </td>
-            <td>
-                <input type="number" class="form-control item-price" name="items[${rowId}][unit_price]" value="${price}" min="0" step="0.01" required>
-            </td>
-            <td>
-                <input type="number" class="form-control item-total" name="items[${rowId}][total]" value="${(quantity * price).toFixed(2)}" min="0" step="0.01" readonly>
-            </td>
-            <td>
-                <button type="button" class="btn btn-sm btn-danger" onclick="removeItemRow('${rowId}')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </td>
+            <td><input type="text"   class="form-control item-desc"    name="items[${rowId}][description]" placeholder="Item description" required></td>
+            <td><input type="number" class="form-control item-quantity" name="items[${rowId}][quantity]"    value="${quantity}" min="1"  step="1"    required></td>
+            <td><input type="number" class="form-control item-price"    name="items[${rowId}][unit_price]"  value="${price}"    min="0"  step="0.01" required></td>
+            <td><input type="number" class="form-control item-total"    name="items[${rowId}][total]"       value="${(quantity * price).toFixed(2)}" min="0" step="0.01" readonly></td>
+            <td><button type="button" class="btn btn-sm btn-danger remove-item"><i class="fas fa-times"></i></button></td>
         `;
-        itemsTbody.appendChild(row);
-        
-        // Add event listeners to the new row
-        const quantityInput = row.querySelector('.item-quantity');
-        const priceInput = row.querySelector('.item-price');
-        
-        quantityInput.addEventListener('input', calculateTotals);
-        priceInput.addEventListener('input', calculateTotals);
-    }
-    
-    window.removeItemRow = function(rowId) {
-        const row = document.getElementById('item-row-' + rowId);
-        if (row) {
+
+        // Set description safely via DOM property (avoids HTML-escaping issues)
+        row.querySelector('.item-desc').value = description;
+
+        row.querySelector('.remove-item').addEventListener('click', function () {
             row.remove();
             calculateTotals();
-        }
-    };
-    
-// Get currency symbol from server-side variable
-    const currencySymbol = '{{ $currencySymbol }}';
-    
+        });
+
+        row.querySelector('.item-quantity').addEventListener('input', calculateTotals);
+        row.querySelector('.item-price').addEventListener('input', calculateTotals);
+
+        itemsTbody.appendChild(row);
+    }
+
     function calculateTotals() {
         let subtotal = 0;
-        
-        document.querySelectorAll('#items-tbody tr').forEach(row => {
-            const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
-            const price = parseFloat(row.querySelector('.item-price').value) || 0;
-            const total = quantity * price;
-            
+
+        itemsTbody.querySelectorAll('tr').forEach(function (row) {
+            const qty   = parseFloat(row.querySelector('.item-quantity').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value)    || 0;
+            const total = qty * price;
             row.querySelector('.item-total').value = total.toFixed(2);
             subtotal += total;
         });
-        
-        const taxRate = parseFloat(taxRateInput.value) || 0;
+
+        const taxRate  = parseFloat(taxRateInput.value)  || 0;
         const discount = parseFloat(discountInput.value) || 0;
-        
-        const taxAmount = subtotal * (taxRate / 100);
-        const totalAmount = subtotal + taxAmount - discount;
-        
-        // Update summary
+        const taxAmt   = subtotal * (taxRate / 100);
+        const totalAmt = subtotal + taxAmt - discount;
+
         document.getElementById('summary-subtotal').textContent = currencySymbol + subtotal.toFixed(2);
-        document.getElementById('summary-tax').textContent = currencySymbol + taxAmount.toFixed(2);
+        document.getElementById('summary-tax').textContent      = currencySymbol + taxAmt.toFixed(2);
         document.getElementById('summary-discount').textContent = currencySymbol + discount.toFixed(2);
-        document.getElementById('summary-total').textContent = currencySymbol + totalAmount.toFixed(2);
-        
-        // Update hidden inputs
-        document.getElementById('input-subtotal').value = subtotal.toFixed(2);
-        document.getElementById('input-tax-amount').value = taxAmount.toFixed(2);
+        document.getElementById('summary-total').textContent    = currencySymbol + totalAmt.toFixed(2);
+
+        document.getElementById('input-subtotal').value        = subtotal.toFixed(2);
+        document.getElementById('input-tax-amount').value      = taxAmt.toFixed(2);
         document.getElementById('input-discount-amount').value = discount.toFixed(2);
-        document.getElementById('input-total-amount').value = totalAmount.toFixed(2);
+        document.getElementById('input-total-amount').value    = totalAmt.toFixed(2);
     }
-    
-    // Add event listeners for tax and discount
+
     taxRateInput.addEventListener('input', calculateTotals);
     discountInput.addEventListener('input', calculateTotals);
 });
