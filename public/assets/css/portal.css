@@ -1507,6 +1507,153 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════
+   LIGHT MODE: Project & Form Page Fixes
+   The project blade files use --border-color and --card-bg
+   which are not defined in :root. This section aliases them
+   to the correct portal variables (light mode only, so dark
+   mode continues to use its existing hardcoded fallbacks).
+═══════════════════════════════════════════════════════ */
+
+/* Alias missing variables → correct portal values (light mode only) */
+:root:not([data-theme="dark"]) {
+    --border-color: var(--border);   /* → #E2E8F0  visible border on white */
+    --card-bg:      var(--bg-card);  /* → #FFFFFF  */
+}
+
+/* ── Project Index Cards ───────────────────────────── */
+:root:not([data-theme="dark"]) .project-card {
+    box-shadow: 0 1px 4px rgba(15,30,60,.08), 0 0 0 1px rgba(15,30,60,.03);
+}
+:root:not([data-theme="dark"]) .project-card:hover {
+    box-shadow: 0 8px 28px rgba(15,30,60,.14);
+}
+:root:not([data-theme="dark"]) .project-footer {
+    background: var(--bg-page);
+    border-top-color: var(--border);
+}
+:root:not([data-theme="dark"]) .proj-stat {
+    box-shadow: var(--shd-sm);
+}
+:root:not([data-theme="dark"]) .proj-stat-icon {
+    box-shadow: 0 1px 3px rgba(15,30,60,.1);
+}
+:root:not([data-theme="dark"]) .proj-stat-num {
+    color: var(--text-h);
+}
+:root:not([data-theme="dark"]) .proj-empty {
+    background: var(--bg-card);
+    border-color: var(--border);
+}
+
+/* ── Project Show: Hero & Quick Stats ──────────────── */
+:root:not([data-theme="dark"]) .proj-hero {
+    box-shadow: var(--shd-sm);
+    background: var(--bg-card);
+}
+:root:not([data-theme="dark"]) .qs-card {
+    box-shadow: var(--shd-sm);
+    background: var(--bg-card);
+}
+:root:not([data-theme="dark"]) .qs-num {
+    color: var(--text-h);
+}
+
+/* ── Project Tabs ──────────────────────────────────── */
+:root:not([data-theme="dark"]) .proj-tab {
+    color: var(--text-muted);
+}
+:root:not([data-theme="dark"]) .proj-tab:hover {
+    color: var(--text-h);
+    background: var(--bg-page);
+    border-radius: 6px 6px 0 0;
+}
+:root:not([data-theme="dark"]) .proj-tab.active {
+    color: var(--ft-teal);
+}
+:root:not([data-theme="dark"]) .tab-badge {
+    background: var(--border);
+    color: var(--text-muted);
+}
+:root:not([data-theme="dark"]) .proj-tab.active .tab-badge {
+    background: rgba(14,116,144,.15);
+    color: var(--ft-teal);
+}
+
+/* ── Milestone Cards ───────────────────────────────── */
+:root:not([data-theme="dark"]) .milestone-card {
+    background: var(--bg-card);
+    box-shadow: 0 1px 3px rgba(15,30,60,.06);
+}
+:root:not([data-theme="dark"]) .milestone-header:hover {
+    background: var(--bg-page) !important;
+}
+:root:not([data-theme="dark"]) .milestone-progress-bar {
+    background: rgba(0,0,0,.08);
+}
+
+/* ── Task List Rows ────────────────────────────────── */
+:root:not([data-theme="dark"]) .task-list-row {
+    background: var(--bg-card);
+    box-shadow: 0 1px 2px rgba(15,30,60,.04);
+}
+:root:not([data-theme="dark"]) .task-list-row:hover {
+    background: var(--bg-page) !important;
+    border-color: var(--border) !important;
+}
+
+/* ── Kanban Board ──────────────────────────────────── */
+:root:not([data-theme="dark"]) .kanban-tasks {
+    background: rgba(0,0,0,.025);
+    border: 1px solid var(--border);
+    border-top: none;
+}
+:root:not([data-theme="dark"]) .kanban-card {
+    background: var(--bg-card);
+    box-shadow: 0 1px 3px rgba(15,30,60,.07);
+}
+:root:not([data-theme="dark"]) .kanban-card:hover {
+    box-shadow: 0 4px 16px rgba(15,30,60,.13);
+}
+:root:not([data-theme="dark"]) .kanban-add-btn {
+    border-color: var(--border);
+    color: var(--text-muted);
+    opacity: 1;
+}
+:root:not([data-theme="dark"]) .kanban-add-btn:hover {
+    background: var(--bg-page) !important;
+    color: var(--text-h) !important;
+    opacity: 1 !important;
+    border-color: var(--text-faint) !important;
+}
+
+/* ── Progress bars ─────────────────────────────────── */
+:root:not([data-theme="dark"]) .project-progress-bar,
+:root:not([data-theme="dark"]) .milestone-progress-bar {
+    background: rgba(0,0,0,.08);
+}
+
+/* ── Create / Edit Form Cards ──────────────────────── */
+:root:not([data-theme="dark"]) .form-card {
+    background: var(--bg-card);
+    box-shadow: var(--shd-sm);
+}
+:root:not([data-theme="dark"]) .status-btn {
+    color: var(--text-body);
+    border-color: var(--border);
+    background: var(--bg-card);
+}
+:root:not([data-theme="dark"]) .status-btn:hover:not(.active) {
+    background: var(--bg-page);
+    border-color: var(--text-faint);
+}
+
+/* ── Deadline & priority badges — higher contrast ──── */
+:root:not([data-theme="dark"]) .deadline-badge.none {
+    background: rgba(148,163,184,.18);
+    color: #64748B;
+}
+
+/* ═══════════════════════════════════════════════════════
    DARK MODE — Variable Overrides
    Applied via [data-theme="dark"] on <html>
 ═══════════════════════════════════════════════════════ */

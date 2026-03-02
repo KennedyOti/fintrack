@@ -4,8 +4,19 @@
 
 @section('styles')
 <style>
-.form-card { border-radius: 14px; border: 1px solid var(--border-color, rgba(255,255,255,0.08)); background: var(--card-bg); }
-.status-btn { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-color, rgba(255,255,255,0.12)); cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: all 0.15s; background: transparent; color: inherit; }
+.form-card {
+    border-radius: 14px;
+    border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+    background: var(--card-bg, #fff);
+}
+.status-btn {
+    padding: 0.5rem 1rem; border-radius: 8px;
+    border: 1.5px solid var(--border-color, rgba(255,255,255,0.12));
+    cursor: pointer; font-size: 0.82rem; font-weight: 600;
+    transition: all 0.15s; background: var(--card-bg, transparent);
+    color: var(--text-body, inherit);
+    display: inline-flex; align-items: center; gap: 5px;
+}
 .status-btn.active { color: #fff; border-color: transparent; }
 .progress-slider { accent-color: var(--ft-teal, #0E7490); }
 </style>
