@@ -8,6 +8,9 @@ use App\Http\Controllers\Portal\IncomeCategoryController;
 use App\Http\Controllers\Portal\ExpenseController;
 use App\Http\Controllers\Portal\ExpenseCategoryController;
 use App\Http\Controllers\Portal\ProjectController;
+use App\Http\Controllers\Portal\MilestoneController;
+use App\Http\Controllers\Portal\TaskController;
+use App\Http\Controllers\Portal\TimeLogController;
 use App\Http\Controllers\Portal\InvoiceController;
 use App\Http\Controllers\Portal\QuoteController;
 use App\Http\Controllers\Portal\SavingsController;
@@ -79,6 +82,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Projects
     Route::resource('projects', ProjectController::class);
+
+    // Project Milestones
+    Route::post('projects/{project}/milestones', [MilestoneController::class, 'store'])->name('projects.milestones.store');
+    Route::put('projects/{project}/milestones/{milestone}', [MilestoneController::class, 'update'])->name('projects.milestones.update');
+    Route::delete('projects/{project}/milestones/{milestone}', [MilestoneController::class, 'destroy'])->name('projects.milestones.destroy');
+    Route::patch('projects/{project}/milestones/{milestone}/status', [MilestoneController::class, 'updateStatus'])->name('projects.milestones.updateStatus');
+
+    // Project Tasks
+    Route::get('projects/{project}/tasks/create', [TaskController::class, 'create'])->name('projects.tasks.create');
+    Route::post('projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
+    Route::post('projects/{project}/tasks/reorder', [TaskController::class, 'reorder'])->name('projects.tasks.reorder');
+    Route::get('projects/{project}/tasks/{task}/edit', [TaskController::class, 'edit'])->name('projects.tasks.edit');
+    Route::put('projects/{project}/tasks/{task}', [TaskController::class, 'update'])->name('projects.tasks.update');
+    Route::delete('projects/{project}/tasks/{task}', [TaskController::class, 'destroy'])->name('projects.tasks.destroy');
+    Route::patch('projects/{project}/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('projects.tasks.updateStatus');
+
+    // Project Time Logs
+    Route::post('projects/{project}/tasks/{task}/logs', [TimeLogController::class, 'store'])->name('projects.tasks.logs.store');
+    Route::delete('projects/{project}/tasks/{task}/logs/{log}', [TimeLogController::class, 'destroy'])->name('projects.tasks.logs.destroy');
     
     // Invoices
     Route::resource('invoices', InvoiceController::class);

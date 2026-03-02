@@ -185,7 +185,7 @@
                     <a href="{{ route('projects.index') }}"
                        class="nav-link {{ request()->routeIs('projects.*') ? 'active' : '' }}">
                         <i class="fas fa-diagram-project nav-icon"></i>
-                        <span>Projects</span>
+                        <span>Project Management</span>
                     </a>
                 </li>
 
