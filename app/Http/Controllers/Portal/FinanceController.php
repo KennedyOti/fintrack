@@ -123,18 +123,29 @@ class FinanceController extends Controller
             })
             ->values();
         
-        // Top clients by revenue (only paid or partially paid invoices)
+        // Top clients by revenue: invoice payments (paid_amount) + direct income (not linked to an invoice)
         $topClients = Client::where('user_id', $user->id)
-            ->withSum(['invoices as total_invoiced' => function ($query) use ($year, $month) {
+            ->withSum(['invoices as invoice_revenue' => function ($query) use ($year, $month) {
                 $query->whereYear('issue_date', $year)
                     ->whereIn('status', ['paid', 'partial']);
                 if ($month) {
                     $query->whereMonth('issue_date', $month);
                 }
-            }], 'total_amount')
-            ->orderByDesc('total_invoiced')
-            ->take(5)
-            ->get();
+            }], 'paid_amount')
+            ->withSum(['incomes as direct_income' => function ($query) use ($year, $month) {
+                $query->whereYear('income_date', $year)
+                    ->whereNull('invoice_id'); // exclude invoice-generated income to avoid double-counting
+                if ($month) {
+                    $query->whereMonth('income_date', $month);
+                }
+            }], 'amount')
+            ->get()
+            ->map(function ($client) {
+                $client->total_revenue = ($client->invoice_revenue ?? 0) + ($client->direct_income ?? 0);
+                return $client;
+            })
+            ->sortByDesc('total_revenue')
+            ->take(5);
         
         // Outstanding invoices
         $outstandingInvoices = Invoice::where('user_id', $user->id)

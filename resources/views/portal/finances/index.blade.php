@@ -311,8 +311,8 @@
                                             </div>
                                         </td>
                                         <td class="pe-3 py-3 text-end">
-                                            <div class="fw-bold text-success">{{ CurrencyHelper::format($client->total_invoiced ?? 0) }}</div>
-                                            <small class="text-muted">Total Invoiced</small>
+                                            <div class="fw-bold text-success">{{ CurrencyHelper::format($client->total_revenue ?? 0) }}</div>
+                                            <small class="text-muted">Total Revenue</small>
                                         </td>
                                     </tr>
                                 @endforeach
