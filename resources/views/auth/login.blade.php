@@ -3,6 +3,23 @@
 @section('title', 'Login - FinTrack')
 
 @section('content')
+@php
+    $suspendedMsg  = $errors->first('account_suspended');
+    $emailMsg      = $errors->first('email');
+    $isRateLimited = $emailMsg && str_contains(strtolower($emailMsg), 'too many');
+    $isSuspended   = $suspendedMsg
+                  || ($emailMsg && str_contains(strtolower($emailMsg), 'suspended'));
+
+    if ($isSuspended)         $popupType = 'suspended';
+    elseif ($isRateLimited)   $popupType = 'warning';
+    elseif ($emailMsg)        $popupType = 'error';
+    else                      $popupType = null;
+
+    $popupMessage = $isSuspended
+        ? 'Your account has been suspended. Please contact <strong>support</strong> for assistance. If you believe this is an error, reach out to us.'
+        : ($emailMsg ?? '');
+@endphp
+
 <div class="auth-page auth-page-only">
     <div class="auth-card">
         <div class="auth-card-header">
@@ -12,37 +29,38 @@
             <h4>Welcome Back</h4>
             <p>Sign in to your account</p>
         </div>
-        
+
         <div class="auth-card-body">
             <form method="POST" action="{{ route('login') }}" class="auth-form">
                 @csrf
-                
+
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <div class="input-icon-wrapper">
                         <span class="input-icon"><i class="fas fa-envelope"></i></span>
-                        <input type="email" 
-                               class="form-control @error('email') is-invalid @enderror" 
-                               id="email" 
-                               name="email" 
-                               value="{{ old('email') }}" 
+                        <input type="email"
+                               class="form-control @error('email') is-invalid @enderror"
+                               id="email"
+                               name="email"
+                               value="{{ old('email') }}"
                                placeholder="you@example.com"
-                               required 
+                               required
                                autofocus>
                     </div>
-                    @error('email')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    {{-- Inline error only shown when popup is not active --}}
+                    @if ($emailMsg && !$popupType)
+                    <div class="invalid-feedback d-block">{{ $emailMsg }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
                     <div class="input-icon-wrapper">
                         <span class="input-icon"><i class="fas fa-lock"></i></span>
-                        <input type="password" 
-                               class="form-control @error('password') is-invalid @enderror" 
-                               id="password" 
-                               name="password" 
+                        <input type="password"
+                               class="form-control @error('password') is-invalid @enderror"
+                               id="password"
+                               name="password"
                                placeholder="••••••••"
                                required>
                         <button type="button" class="password-toggle" onclick="togglePassword('password')">
@@ -90,6 +108,56 @@
             </div>
         </div>
     </div>
+
+    {{-- Auth Alert Popup --}}
+    @if ($popupType)
+    <div class="auth-popup-overlay" id="authPopupOverlay" onclick="closeAuthPopupOnOverlay(event)">
+        <div class="auth-popup auth-popup--{{ $popupType }}">
+            <button class="auth-popup-close" onclick="closeAuthPopup()" aria-label="Dismiss">
+                <i class="fas fa-times"></i>
+            </button>
+
+            @if ($popupType === 'suspended')
+                <div class="auth-popup-icon-wrap"><i class="fas fa-ban"></i></div>
+                <h5 class="auth-popup-title">Account Suspended</h5>
+                <p class="auth-popup-message">{!! $popupMessage !!}</p>
+                <div class="auth-popup-actions">
+                    <a href="mailto:support@fintrack.com" class="auth-popup-btn auth-popup-btn-primary">
+                        <i class="fas fa-envelope"></i> Contact Support
+                    </a>
+                    <button class="auth-popup-btn auth-popup-btn-secondary" onclick="closeAuthPopup()">
+                        Close
+                    </button>
+                </div>
+
+            @elseif ($popupType === 'warning')
+                <div class="auth-popup-icon-wrap"><i class="fas fa-clock"></i></div>
+                <h5 class="auth-popup-title">Too Many Attempts</h5>
+                <p class="auth-popup-message">{{ $popupMessage }}</p>
+                <div class="auth-popup-actions">
+                    <button class="auth-popup-btn auth-popup-btn-primary" onclick="closeAuthPopup()">
+                        <i class="fas fa-check"></i> Got It
+                    </button>
+                </div>
+
+            @else
+                <div class="auth-popup-icon-wrap"><i class="fas fa-circle-xmark"></i></div>
+                <h5 class="auth-popup-title">Sign In Failed</h5>
+                <p class="auth-popup-message">{{ $popupMessage }}</p>
+                <div class="auth-popup-actions">
+                    @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}" class="auth-popup-btn auth-popup-btn-primary">
+                        <i class="fas fa-key"></i> Reset Password
+                    </a>
+                    @endif
+                    <button class="auth-popup-btn auth-popup-btn-secondary" onclick="closeAuthPopup()">
+                        Try Again
+                    </button>
+                </div>
+            @endif
+        </div>
+    </div>
+    @endif
 </div>
 @endsection
 
@@ -98,16 +166,29 @@
     function togglePassword(inputId) {
         const input = document.getElementById(inputId);
         const icon = input.nextElementSibling.querySelector('i');
-        
         if (input.type === 'password') {
             input.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
         } else {
             input.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
         }
     }
+
+    function closeAuthPopup() {
+        var overlay = document.getElementById('authPopupOverlay');
+        if (!overlay) return;
+        overlay.style.transition = 'opacity 0.18s ease';
+        overlay.style.opacity = '0';
+        setTimeout(function () { overlay.remove(); }, 190);
+    }
+
+    function closeAuthPopupOnOverlay(event) {
+        if (event.target === event.currentTarget) closeAuthPopup();
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAuthPopup();
+    });
 </script>
 @endpush

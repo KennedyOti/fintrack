@@ -3,6 +3,15 @@
 @section('title', 'Register - FinTrack')
 
 @section('content')
+@php
+    $emailErr    = $errors->first('email');
+    $passwordErr = $errors->first('password');
+    $nameErr     = $errors->first('name');
+    $firstErr    = $errors->first();
+    $emailTaken  = $emailErr && str_contains(strtolower($emailErr), 'taken');
+    $hasErrors   = $errors->any();
+@endphp
+
 <div class="auth-page auth-page-only">
     <div class="auth-card">
         <div class="auth-card-header">
@@ -12,54 +21,48 @@
             <h4>Create Account</h4>
             <p>Start managing your finances today</p>
         </div>
-        
+
         <div class="auth-card-body">
             <form method="POST" action="{{ route('register') }}" class="auth-form">
                 @csrf
-                
+
                 <div class="form-group">
                     <label for="name">Full Name</label>
                     <div class="input-icon-wrapper">
                         <span class="input-icon"><i class="fas fa-user"></i></span>
-                        <input type="text" 
-                               class="form-control @error('name') is-invalid @enderror" 
-                               id="name" 
-                               name="name" 
-                               value="{{ old('name') }}" 
+                        <input type="text"
+                               class="form-control @error('name') is-invalid @enderror"
+                               id="name"
+                               name="name"
+                               value="{{ old('name') }}"
                                placeholder="John Doe"
-                               required 
+                               required
                                autofocus>
                     </div>
-                    @error('name')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <div class="input-icon-wrapper">
                         <span class="input-icon"><i class="fas fa-envelope"></i></span>
-                        <input type="email" 
-                               class="form-control @error('email') is-invalid @enderror" 
-                               id="email" 
-                               name="email" 
-                               value="{{ old('email') }}" 
+                        <input type="email"
+                               class="form-control @error('email') is-invalid @enderror"
+                               id="email"
+                               name="email"
+                               value="{{ old('email') }}"
                                placeholder="you@example.com"
                                required>
                     </div>
-                    @error('email')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
                     <div class="input-icon-wrapper">
                         <span class="input-icon"><i class="fas fa-lock"></i></span>
-                        <input type="password" 
-                               class="form-control @error('password') is-invalid @enderror" 
-                               id="password" 
-                               name="password" 
+                        <input type="password"
+                               class="form-control @error('password') is-invalid @enderror"
+                               id="password"
+                               name="password"
                                placeholder="••••••••"
                                required>
                         <button type="button" class="password-toggle" onclick="togglePassword('password')">
@@ -67,19 +70,16 @@
                         </button>
                     </div>
                     <p class="password-hint">Must be at least 8 characters</p>
-                    @error('password')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label for="password_confirmation">Confirm Password</label>
                     <div class="input-icon-wrapper">
                         <span class="input-icon"><i class="fas fa-lock"></i></span>
-                        <input type="password" 
-                               class="form-control" 
-                               id="password_confirmation" 
-                               name="password_confirmation" 
+                        <input type="password"
+                               class="form-control"
+                               id="password_confirmation"
+                               name="password_confirmation"
                                placeholder="••••••••"
                                required>
                         <button type="button" class="password-toggle" onclick="togglePassword('password_confirmation')">
@@ -114,25 +114,86 @@
             </div>
         </div>
     </div>
+
+    {{-- Auth Alert Popup --}}
+    @if ($hasErrors)
+    <div class="auth-popup-overlay" id="authPopupOverlay" onclick="closeAuthPopupOnOverlay(event)">
+        <div class="auth-popup auth-popup--error">
+            <button class="auth-popup-close" onclick="closeAuthPopup()" aria-label="Dismiss">
+                <i class="fas fa-times"></i>
+            </button>
+
+            @if ($emailTaken)
+                <div class="auth-popup-icon-wrap"><i class="fas fa-user-xmark"></i></div>
+                <h5 class="auth-popup-title">Email Already Registered</h5>
+                <p class="auth-popup-message">
+                    This email address is already linked to an account.
+                    Try <strong>signing in</strong> instead, or use a different email address.
+                </p>
+                <div class="auth-popup-actions">
+                    <a href="{{ route('login') }}" class="auth-popup-btn auth-popup-btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Sign In Instead
+                    </a>
+                    <button class="auth-popup-btn auth-popup-btn-secondary" onclick="closeAuthPopup()">
+                        Use Different Email
+                    </button>
+                </div>
+
+            @elseif ($passwordErr)
+                <div class="auth-popup-icon-wrap"><i class="fas fa-lock"></i></div>
+                <h5 class="auth-popup-title">Password Issue</h5>
+                <p class="auth-popup-message">{{ $passwordErr }}</p>
+                <div class="auth-popup-actions">
+                    <button class="auth-popup-btn auth-popup-btn-primary" onclick="closeAuthPopup()">
+                        <i class="fas fa-pen"></i> Fix Password
+                    </button>
+                </div>
+
+            @else
+                <div class="auth-popup-icon-wrap"><i class="fas fa-triangle-exclamation"></i></div>
+                <h5 class="auth-popup-title">Registration Error</h5>
+                <p class="auth-popup-message">{{ $firstErr }}</p>
+                <div class="auth-popup-actions">
+                    <button class="auth-popup-btn auth-popup-btn-primary" onclick="closeAuthPopup()">
+                        <i class="fas fa-rotate-left"></i> Try Again
+                    </button>
+                </div>
+            @endif
+        </div>
+    </div>
+    @endif
 </div>
-@endSection
+@endsection
 
 @push('scripts')
 <script>
     function togglePassword(inputId) {
         const input = document.getElementById(inputId);
-        const btn = input.nextElementSibling;
-        const icon = btn.querySelector('i');
-        
+        const btn   = input.nextElementSibling;
+        const icon  = btn.querySelector('i');
         if (input.type === 'password') {
             input.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
         } else {
             input.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
         }
     }
+
+    function closeAuthPopup() {
+        var overlay = document.getElementById('authPopupOverlay');
+        if (!overlay) return;
+        overlay.style.transition = 'opacity 0.18s ease';
+        overlay.style.opacity = '0';
+        setTimeout(function () { overlay.remove(); }, 190);
+    }
+
+    function closeAuthPopupOnOverlay(event) {
+        if (event.target === event.currentTarget) closeAuthPopup();
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAuthPopup();
+    });
 </script>
 @endpush

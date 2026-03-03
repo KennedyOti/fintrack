@@ -41,6 +41,15 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        // Check for suspended account before attempting auth, so we can show
+        // a specific "suspended" error instead of the generic failure message.
+        $user = \App\Models\User::where('email', $this->string('email'))->first();
+        if ($user && $user->status === 'suspended') {
+            throw ValidationException::withMessages([
+                'account_suspended' => 'Your account has been suspended. Please contact support for assistance.',
+            ]);
+        }
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
