@@ -11,6 +11,7 @@
     <meta property="og:description" content="@yield('og-description', 'The all-in-one financial platform built for freelancers. Track income, send invoices, manage expenses and savings — all in one dashboard.')">
     <meta property="og:type"        content="website">
     <meta property="og:image"       content="{{ asset('assets/images/dashbaord.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('assets/images/logo.ico') }}">
     <title>@yield('title', 'FinTrack — Financial Management for Freelancers')</title>
 
     {{-- Fonts: Space Grotesk + Inter --}}
