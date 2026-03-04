@@ -27,7 +27,12 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\SystemSettingController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\HowItWorksController;
+use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\Admin\BlogController as AdminBlogController;
+use App\Http\Controllers\Admin\BlogCategoryController;
+use App\Http\Controllers\Admin\BlogCommentController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -36,7 +41,18 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/about',        [AboutController::class,      'index'])->name('about');
+Route::get('/products',     [ProductsController::class,   'index'])->name('products');
 Route::get('/how-it-works', [HowItWorksController::class, 'index'])->name('how-it-works');
+
+// ── Public Blog ──────────────────────────────────────────────────────────
+Route::prefix('blog')->name('blog.')->group(function () {
+    Route::get('/',                   [BlogController::class, 'index'])->name('index');
+    Route::get('/category/{slug}',    [BlogController::class, 'category'])->name('category');
+    Route::get('/tag/{slug}',         [BlogController::class, 'tag'])->name('tag');
+    Route::post('/{slug}/like',       [BlogController::class, 'like'])->name('like');
+    Route::post('/{slug}/comment',    [BlogController::class, 'comment'])->name('comment');
+    Route::get('/{slug}',             [BlogController::class, 'show'])->name('show');
+});
 
 // ── Shareable Client Links (no auth required) ──────────────────────────────
 Route::prefix('view')->name('public.')->group(function () {
@@ -207,6 +223,32 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'role:ad
     // System Settings
     Route::get('/settings',                            [SystemSettingController::class, 'index'])->name('settings.index');
     Route::post('/settings',                           [SystemSettingController::class, 'update'])->name('settings.update');
+
+    // ── Blog Management (Admin only) ─────────────────────────────────────
+    // Blog Posts
+    Route::get('/blog',                                [AdminBlogController::class, 'index'])->name('blog.index');
+    Route::get('/blog/create',                         [AdminBlogController::class, 'create'])->name('blog.create');
+    Route::post('/blog',                               [AdminBlogController::class, 'store'])->name('blog.store');
+    Route::get('/blog/{blog}/edit',                    [AdminBlogController::class, 'edit'])->name('blog.edit');
+    Route::put('/blog/{blog}',                         [AdminBlogController::class, 'update'])->name('blog.update');
+    Route::delete('/blog/{blog}',                      [AdminBlogController::class, 'destroy'])->name('blog.destroy');
+    Route::patch('/blog/{blog}/toggle-status',         [AdminBlogController::class, 'toggleStatus'])->name('blog.toggleStatus');
+    Route::post('/blog/upload-image',                  [AdminBlogController::class, 'uploadImage'])->name('blog.upload-image');
+
+    // Blog Categories
+    Route::get('/blog/categories',                     [BlogCategoryController::class, 'index'])->name('blog.categories.index');
+    Route::get('/blog/categories/create',              [BlogCategoryController::class, 'create'])->name('blog.categories.create');
+    Route::post('/blog/categories',                    [BlogCategoryController::class, 'store'])->name('blog.categories.store');
+    Route::get('/blog/categories/{category}/edit',     [BlogCategoryController::class, 'edit'])->name('blog.categories.edit');
+    Route::put('/blog/categories/{category}',          [BlogCategoryController::class, 'update'])->name('blog.categories.update');
+    Route::delete('/blog/categories/{category}',       [BlogCategoryController::class, 'destroy'])->name('blog.categories.destroy');
+
+    // Blog Comments
+    Route::get('/blog/comments',                       [BlogCommentController::class, 'index'])->name('blog.comments.index');
+    Route::post('/blog/comments/{comment}/approve',    [BlogCommentController::class, 'approve'])->name('blog.comments.approve');
+    Route::post('/blog/comments/{comment}/spam',       [BlogCommentController::class, 'spam'])->name('blog.comments.spam');
+    Route::delete('/blog/comments/{comment}',          [BlogCommentController::class, 'destroy'])->name('blog.comments.destroy');
+    Route::post('/blog/comments/bulk',                 [BlogCommentController::class, 'bulkAction'])->name('blog.comments.bulk');
 
 });
 

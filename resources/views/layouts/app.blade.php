@@ -55,9 +55,21 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('products') }}"
+                   class="{{ request()->routeIs('products') ? 'active' : '' }}">
+                    Products
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('how-it-works') }}"
                    class="{{ request()->routeIs('how-it-works') ? 'active' : '' }}">
                     How It Works
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('blog.index') }}"
+                   class="{{ request()->routeIs('blog.*') ? 'active' : '' }}">
+                    Blog
                 </a>
             </li>
         </ul>
@@ -92,7 +104,9 @@
     <div class="drawer-panel">
         <a href="{{ route('home') }}"          class="drawer-link"><i class="fa-solid fa-house"></i> Home</a>
         <a href="{{ route('about') }}"         class="drawer-link"><i class="fa-solid fa-circle-info"></i> About</a>
+        <a href="{{ route('products') }}"      class="drawer-link"><i class="fa-solid fa-toolbox"></i> Products</a>
         <a href="{{ route('how-it-works') }}"  class="drawer-link"><i class="fa-solid fa-circle-question"></i> How It Works</a>
+        <a href="{{ route('blog.index') }}"    class="drawer-link"><i class="fa-solid fa-rss"></i> Blog</a>
         <div class="drawer-sep"></div>
         <div class="drawer-actions">
             @auth
@@ -145,7 +159,9 @@
                 <ul class="footer-list">
                     <li><a href="{{ route('home') }}">Home</a></li>
                     <li><a href="{{ route('about') }}">About</a></li>
+                    <li><a href="{{ route('products') }}">Products</a></li>
                     <li><a href="{{ route('how-it-works') }}">How It Works</a></li>
+                    <li><a href="{{ route('blog.index') }}">Blog</a></li>
                     <li><a href="{{ route('login') }}">Log In</a></li>
                     <li><a href="{{ route('register') }}">Get Started</a></li>
                 </ul>
@@ -155,10 +171,10 @@
             <div class="col-lg-2 col-md-3 col-6">
                 <p class="footer-h">Features</p>
                 <ul class="footer-list">
-                    <li><a href="{{ route('how-it-works') }}">Income Tracking</a></li>
-                    <li><a href="{{ route('how-it-works') }}">Invoice Management</a></li>
-                    <li><a href="{{ route('how-it-works') }}">Expense Tracking</a></li>
-                    <li><a href="{{ route('how-it-works') }}">Savings Goals</a></li>
+                    <li><a href="{{ route('products') }}#invoicing">Free Invoice Tool</a></li>
+                    <li><a href="{{ route('products') }}#quotations">Free Quote Builder</a></li>
+                    <li><a href="{{ route('products') }}#project-management">Project Management</a></li>
+                    <li><a href="{{ route('how-it-works') }}">How It Works</a></li>
                     <li><a href="{{ route('how-it-works') }}">Financial Reports</a></li>
                 </ul>
             </div>

@@ -266,6 +266,44 @@
                         <span>System Settings</span>
                     </a>
                 </li>
+
+                {{-- Blog Management --}}
+                <li>
+                    <a class="nav-link {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}"
+                       data-bs-toggle="collapse" href="#blogAdminMenu"
+                       aria-expanded="{{ request()->routeIs('admin.blog.*') ? 'true' : 'false' }}">
+                        <i class="fas fa-rss nav-icon"></i>
+                        <span>Blog</span>
+                        <i class="fas fa-chevron-down nav-chevron"></i>
+                    </a>
+                    <div class="collapse {{ request()->routeIs('admin.blog.*') ? 'show' : '' }}" id="blogAdminMenu">
+                        <ul class="sidebar-submenu">
+                            <li>
+                                <a href="{{ route('admin.blog.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.blog.index') ? 'active' : '' }}">All Posts</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.blog.create') }}"
+                                   class="nav-link {{ request()->routeIs('admin.blog.create') ? 'active' : '' }}">New Post</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.blog.categories.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.blog.categories.*') ? 'active' : '' }}">Categories</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.blog.comments.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.blog.comments.*') ? 'active' : '' }}">
+                                    Comments
+                                    @php $pendingBlogComments = \App\Models\BlogComment::where('status','pending')->count(); @endphp
+                                    @if($pendingBlogComments > 0)
+                                    <span class="badge ms-auto" style="background:var(--ft-rose);font-size:10px;min-width:18px;">{{ $pendingBlogComments }}</span>
+                                    @endif
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
                 @endif
 
             </ul>
