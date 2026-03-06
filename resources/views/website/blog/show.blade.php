@@ -39,27 +39,27 @@
 {{-- Schema.org JSON-LD --}}
 <script type="application/ld+json">
 {
-    "@context": "https://schema.org",
-    "@type": "Article",
+    "@@context": "https://schema.org",
+    "@@type": "Article",
     "headline": "{{ addslashes($post->title) }}",
     "description": "{{ addslashes($post->excerpt ?? Str::limit(strip_tags($post->content), 200)) }}",
     "author": {
-        "@type": "Person",
+        "@@type": "Person",
         "name": "{{ addslashes($post->author->name) }}"
     },
     "publisher": {
-        "@type": "Organization",
+        "@@type": "Organization",
         "name": "FinTrack",
         "logo": {
-            "@type": "ImageObject",
+            "@@type": "ImageObject",
             "url": "{{ asset('assets/images/logo.png') }}"
         }
     },
     "datePublished": "{{ $post->published_at?->toISOString() }}",
     "dateModified": "{{ $post->updated_at->toISOString() }}",
     "mainEntityOfPage": {
-        "@type": "WebPage",
-        "@id": "{{ route('blog.show', $post->slug) }}"
+        "@@type": "WebPage",
+        "@@id": "{{ route('blog.show', $post->slug) }}"
     }
     @if($post->featured_image)
     ,"image": "{{ Storage::url($post->featured_image) }}"
@@ -68,7 +68,7 @@
 </script>
 
 {{-- ── Breadcrumb ──────────────────────────────────────────────────────── --}}
-<div style="background:var(--bg-surface);border-bottom:1px solid var(--border-dim);padding:12px 0;">
+<div style="background:var(--bg-surface);border-bottom:1px solid var(--border-dim);padding:12px 0;margin-top:64px;">
     <div class="container" style="max-width:1160px;">
         <nav class="blog-breadcrumb" aria-label="breadcrumb">
             <a href="{{ route('home') }}">Home</a>
