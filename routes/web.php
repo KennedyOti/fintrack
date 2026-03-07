@@ -34,7 +34,17 @@ use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\BlogCommentController;
 use App\Http\Controllers\FreeDocsController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+
+// Sitemap
+Route::get('/sitemap.xml', function () {
+    $path = public_path('sitemap.xml');
+    if (!file_exists($path)) {
+        Artisan::call('sitemap:generate');
+    }
+    return response()->file($path, ['Content-Type' => 'application/xml']);
+})->name('sitemap');
 
 // Public routes
 Route::get('/', function () {

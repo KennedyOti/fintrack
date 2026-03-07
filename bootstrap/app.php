@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('recurring:generate')->dailyAt('00:05');
         $schedule->command('notifications:generate')->dailyAt('07:00');
+        $schedule->command('sitemap:generate')->dailyAt('03:00');
     })
     ->withMiddleware(function (Middleware $middleware): void {
         // Register custom middleware aliases
