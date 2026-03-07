@@ -27,6 +27,7 @@
     <link href="{{ asset('assets/css/styles.css') }}" rel="stylesheet">
 
     @yield('styles')
+    @stack('styles')
 </head>
 <body>
 
@@ -72,6 +73,13 @@
                     Blog
                 </a>
             </li>
+            <li>
+                <a href="{{ route('free-docs.index') }}"
+                   class="{{ request()->routeIs('free-docs.*') ? 'active' : '' }}"
+                   style="{{ request()->routeIs('free-docs.*') ? '' : 'color:#22d3ee;font-weight:700;' }}">
+                    <i class="fa-solid fa-file-invoice" style="font-size:11px;"></i> Free Docs
+                </a>
+            </li>
         </ul>
 
         {{-- Auth actions --}}
@@ -106,7 +114,8 @@
         <a href="{{ route('about') }}"         class="drawer-link"><i class="fa-solid fa-circle-info"></i> About</a>
         <a href="{{ route('products') }}"      class="drawer-link"><i class="fa-solid fa-toolbox"></i> Products</a>
         <a href="{{ route('how-it-works') }}"  class="drawer-link"><i class="fa-solid fa-circle-question"></i> How It Works</a>
-        <a href="{{ route('blog.index') }}"    class="drawer-link"><i class="fa-solid fa-rss"></i> Blog</a>
+        <a href="{{ route('blog.index') }}"       class="drawer-link"><i class="fa-solid fa-rss"></i> Blog</a>
+        <a href="{{ route('free-docs.index') }}" class="drawer-link" style="color:#22d3ee;font-weight:700;"><i class="fa-solid fa-file-invoice"></i> Free Docs</a>
         <div class="drawer-sep"></div>
         <div class="drawer-actions">
             @auth
@@ -169,13 +178,13 @@
 
             {{-- Features --}}
             <div class="col-lg-2 col-md-3 col-6">
-                <p class="footer-h">Features</p>
+                <p class="footer-h">Free Tools</p>
                 <ul class="footer-list">
-                    <li><a href="{{ route('products') }}#invoicing">Free Invoice Tool</a></li>
-                    <li><a href="{{ route('products') }}#quotations">Free Quote Builder</a></li>
-                    <li><a href="{{ route('products') }}#project-management">Project Management</a></li>
-                    <li><a href="{{ route('how-it-works') }}">How It Works</a></li>
-                    <li><a href="{{ route('how-it-works') }}">Financial Reports</a></li>
+                    <li><a href="{{ route('free-docs.builder', 'invoice') }}">Free Invoice Generator</a></li>
+                    <li><a href="{{ route('free-docs.builder', 'quote') }}">Free Quote Builder</a></li>
+                    <li><a href="{{ route('free-docs.builder', 'receipt') }}">Free Receipt Maker</a></li>
+                    <li><a href="{{ route('free-docs.index') }}">All Free Docs</a></li>
+                    <li><a href="{{ route('products') }}">All Products</a></li>
                 </ul>
             </div>
 

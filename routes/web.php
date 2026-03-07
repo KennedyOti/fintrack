@@ -33,6 +33,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\BlogCommentController;
+use App\Http\Controllers\FreeDocsController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -43,6 +44,16 @@ Route::get('/', function () {
 Route::get('/about',        [AboutController::class,      'index'])->name('about');
 Route::get('/products',     [ProductsController::class,   'index'])->name('products');
 Route::get('/how-it-works', [HowItWorksController::class, 'index'])->name('how-it-works');
+
+// ── Free Business Docs (public, no auth) ─────────────────────────────────
+Route::prefix('free-docs')->name('free-docs.')->group(function () {
+    Route::get('/',                         [FreeDocsController::class, 'index'])->name('index');
+    Route::get('/builder/{type}',           [FreeDocsController::class, 'builder'])->name('builder');
+    Route::post('/generate-pdf',            [FreeDocsController::class, 'generatePdf'])->name('generate-pdf');
+    Route::post('/save',                    [FreeDocsController::class, 'save'])->name('save');
+    Route::get('/view/{token}',             [FreeDocsController::class, 'view'])->name('view');
+    Route::get('/view/{token}/pdf',         [FreeDocsController::class, 'viewPdf'])->name('view-pdf');
+});
 
 // ── Public Blog ──────────────────────────────────────────────────────────
 Route::prefix('blog')->name('blog.')->group(function () {
