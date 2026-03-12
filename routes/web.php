@@ -33,6 +33,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Admin\BlogController as AdminBlogController;
 use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\BlogCommentController;
+use App\Http\Controllers\Admin\FreeDocsAnalyticsController;
 use App\Http\Controllers\FreeDocsController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -270,6 +271,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'role:ad
     Route::post('/blog/comments/{comment}/spam',       [BlogCommentController::class, 'spam'])->name('blog.comments.spam');
     Route::delete('/blog/comments/{comment}',          [BlogCommentController::class, 'destroy'])->name('blog.comments.destroy');
     Route::post('/blog/comments/bulk',                 [BlogCommentController::class, 'bulkAction'])->name('blog.comments.bulk');
+
+    // ── Free Docs Analytics ──────────────────────────────────────────────────
+    Route::get('/free-docs-analytics', [FreeDocsAnalyticsController::class, 'index'])->name('free-docs.analytics');
 
 });
 

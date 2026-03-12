@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\FreeDoc;
+use App\Models\FreeDocAnalytic;
+use App\Services\FreeDocsAnalyticsService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,6 +17,7 @@ class FreeDocsController extends Controller
     // ── Landing page ─────────────────────────────────────────────────────────
     public function index()
     {
+        FreeDocsAnalyticsService::track(FreeDocAnalytic::EVENT_PAGE_VIEW);
         return view('website.free-docs.index');
     }
 
@@ -22,6 +25,7 @@ class FreeDocsController extends Controller
     public function builder(string $type)
     {
         abort_if(!in_array($type, self::VALID_TYPES), 404);
+        FreeDocsAnalyticsService::track(FreeDocAnalytic::EVENT_BUILDER_OPEN, ['doc_type' => $type]);
         return view('website.free-docs.builder', compact('type'));
     }
 
@@ -37,6 +41,11 @@ class FreeDocsController extends Controller
         $doc      = $data['doc'];
         $template = $data['template'];
         $type     = $data['type'];
+
+        FreeDocsAnalyticsService::track(
+            FreeDocAnalytic::EVENT_PDF_GENERATED,
+            FreeDocsAnalyticsService::extractDocMeta($doc, $type, $template)
+        );
 
         $filename = strtoupper(str_replace('_', '-', $type)) . '-' . ($doc['details']['number'] ?? '001') . '.pdf';
 
@@ -66,12 +75,17 @@ class FreeDocsController extends Controller
             $token = Str::random(40);
         } while (FreeDoc::where('token', $token)->exists());
 
-        $freeDoc = FreeDoc::create([
+        FreeDoc::create([
             'type'          => $data['type'],
             'token'         => $token,
             'document_data' => array_merge($data['doc'], ['template' => $data['template']]),
             'expires_at'    => now()->addDays(60),
         ]);
+
+        FreeDocsAnalyticsService::track(
+            FreeDocAnalytic::EVENT_DOC_SAVED,
+            FreeDocsAnalyticsService::extractDocMeta($data['doc'], $data['type'], $data['template'])
+        );
 
         return response()->json([
             'token' => $token,
@@ -84,6 +98,8 @@ class FreeDocsController extends Controller
     {
         $doc = FreeDoc::active()->where('token', $token)->firstOrFail();
         $doc->increment('view_count');
+
+        FreeDocsAnalyticsService::track(FreeDocAnalytic::EVENT_DOC_VIEWED, ['doc_type' => $doc->type]);
 
         return view('website.free-docs.view', [
             'freeDoc'  => $doc,
@@ -105,6 +121,8 @@ class FreeDocsController extends Controller
         if (!in_array($template, self::VALID_TEMPLATES)) {
             $template = 'streamline';
         }
+
+        FreeDocsAnalyticsService::track(FreeDocAnalytic::EVENT_PDF_FROM_SHARE, ['doc_type' => $type]);
 
         $filename = strtoupper(str_replace('_', '-', $type)) . '-' . ($docData['details']['number'] ?? '001') . '.pdf';
 

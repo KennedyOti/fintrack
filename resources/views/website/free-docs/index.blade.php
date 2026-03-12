@@ -54,7 +54,7 @@
                     </div>
                     <h3>Quotation</h3>
                     <p>Send price estimates to prospective clients before work begins. Set expiry dates and terms.</p>
-                    <span class="fd-doc-card-btn" style="border-color:#22C55E; color:#22C55E;">
+                    <span class="fd-doc-card-btn">
                         Create Quote <i class="fa-solid fa-arrow-right"></i>
                     </span>
                 </a>
@@ -68,7 +68,7 @@
                     </div>
                     <h3>Sales Receipt</h3>
                     <p>Provide payment confirmation to customers after a completed sale. Simple and professional.</p>
-                    <span class="fd-doc-card-btn" style="border-color:#F59E0B; color:#F59E0B;">
+                    <span class="fd-doc-card-btn">
                         Create Receipt <i class="fa-solid fa-arrow-right"></i>
                     </span>
                 </a>
@@ -82,7 +82,7 @@
                     </div>
                     <h3>Proforma Invoice</h3>
                     <p>Send a preliminary invoice before final billing. Ideal for customs, budgeting and advance approvals.</p>
-                    <span class="fd-doc-card-btn" style="border-color:#8B5CF6; color:#8B5CF6;">
+                    <span class="fd-doc-card-btn">
                         Create Proforma <i class="fa-solid fa-arrow-right"></i>
                     </span>
                 </a>
@@ -96,7 +96,7 @@
                     </div>
                     <h3>Purchase Order</h3>
                     <p>Issue official purchase orders to suppliers. Specify items, quantities, pricing and expected delivery dates.</p>
-                    <span class="fd-doc-card-btn" style="border-color:#F43F5E; color:#F43F5E;">
+                    <span class="fd-doc-card-btn">
                         Create PO <i class="fa-solid fa-arrow-right"></i>
                     </span>
                 </a>
@@ -110,7 +110,7 @@
                     </div>
                     <h3>Delivery Note</h3>
                     <p>Accompany shipments with a professional delivery note. Track quantities ordered vs. delivered by item.</p>
-                    <span class="fd-doc-card-btn" style="border-color:#0E7490; color:#0E7490;">
+                    <span class="fd-doc-card-btn">
                         Create Delivery Note <i class="fa-solid fa-arrow-right"></i>
                     </span>
                 </a>

@@ -267,6 +267,15 @@
                     </a>
                 </li>
 
+                {{-- Free Docs Analytics --}}
+                <li>
+                    <a href="{{ route('admin.free-docs.analytics') }}"
+                       class="nav-link {{ request()->routeIs('admin.free-docs.analytics') ? 'active' : '' }}">
+                        <i class="fas fa-chart-column nav-icon"></i>
+                        <span>Free Docs Analytics</span>
+                    </a>
+                </li>
+
                 {{-- Blog Management --}}
                 <li>
                     <a class="nav-link {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}"
