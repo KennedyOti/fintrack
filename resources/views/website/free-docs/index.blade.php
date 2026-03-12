@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Free Business Docs — Invoice, Quote & Receipt Generator | FinTrack')
-@section('meta-description', 'Create professional invoices, quotations, and receipts online for free. No signup required. Customise fonts, colours, templates and download as PDF or share with a link.')
+@section('title', 'Free Business Docs — Invoice, Quote, PO & More | FinTrack')
+@section('meta-description', 'Create professional invoices, quotations, receipts, proforma invoices, purchase orders and delivery notes online for free. No signup required. Download as PDF or share with a link.')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/css/free-docs.css') }}">
@@ -23,9 +23,9 @@
             </h1>
 
             <p>
-                Create stunning invoices, quotations, and sales receipts with full customisation —
-                choose your template, colours and font, upload your logo, add line items and
-                download a pixel-perfect PDF or share a secure link directly with your client.
+                Create stunning invoices, quotations, receipts, proforma invoices, purchase orders
+                and delivery notes with full customisation — choose your template, colours and font,
+                upload your logo, add line items and download a pixel-perfect PDF or share a secure link.
             </p>
 
             {{-- ── Document type cards ──────────────────────────────── --}}
@@ -70,6 +70,48 @@
                     <p>Provide payment confirmation to customers after a completed sale. Simple and professional.</p>
                     <span class="fd-doc-card-btn" style="border-color:#F59E0B; color:#F59E0B;">
                         Create Receipt <i class="fa-solid fa-arrow-right"></i>
+                    </span>
+                </a>
+
+                {{-- Proforma Invoice --}}
+                <a href="{{ route('free-docs.builder', 'proforma') }}" class="fd-doc-card"
+                   style="--accent-col: #8B5CF6;">
+                    <div class="fd-doc-card-icon"
+                         style="background:rgba(139,92,246,.12); color:#8B5CF6;">
+                        <i class="fa-solid fa-file-circle-check"></i>
+                    </div>
+                    <h3>Proforma Invoice</h3>
+                    <p>Send a preliminary invoice before final billing. Ideal for customs, budgeting and advance approvals.</p>
+                    <span class="fd-doc-card-btn" style="border-color:#8B5CF6; color:#8B5CF6;">
+                        Create Proforma <i class="fa-solid fa-arrow-right"></i>
+                    </span>
+                </a>
+
+                {{-- Purchase Order --}}
+                <a href="{{ route('free-docs.builder', 'purchase_order') }}" class="fd-doc-card"
+                   style="--accent-col: #F43F5E;">
+                    <div class="fd-doc-card-icon"
+                         style="background:rgba(244,63,94,.12); color:#F43F5E;">
+                        <i class="fa-solid fa-cart-flatbed"></i>
+                    </div>
+                    <h3>Purchase Order</h3>
+                    <p>Issue official purchase orders to suppliers. Specify items, quantities, pricing and expected delivery dates.</p>
+                    <span class="fd-doc-card-btn" style="border-color:#F43F5E; color:#F43F5E;">
+                        Create PO <i class="fa-solid fa-arrow-right"></i>
+                    </span>
+                </a>
+
+                {{-- Delivery Note --}}
+                <a href="{{ route('free-docs.builder', 'delivery_note') }}" class="fd-doc-card"
+                   style="--accent-col: #0E7490;">
+                    <div class="fd-doc-card-icon"
+                         style="background:rgba(14,116,144,.12); color:#0E7490;">
+                        <i class="fa-solid fa-truck"></i>
+                    </div>
+                    <h3>Delivery Note</h3>
+                    <p>Accompany shipments with a professional delivery note. Track quantities ordered vs. delivered by item.</p>
+                    <span class="fd-doc-card-btn" style="border-color:#0E7490; color:#0E7490;">
+                        Create Delivery Note <i class="fa-solid fa-arrow-right"></i>
                     </span>
                 </a>
 
@@ -148,17 +190,22 @@
                 <a href="{{ route('free-docs.builder', 'invoice') }}"
                    class="fd-btn fd-btn-primary"
                    style="font-size:14px; padding:12px 28px;">
-                    <i class="fa-solid fa-file-invoice-dollar"></i> Create Free Invoice
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Create Invoice
                 </a>
-                <a href="{{ route('free-docs.builder', 'quote') }}"
+                <a href="{{ route('free-docs.builder', 'proforma') }}"
                    class="fd-btn fd-btn-outline"
                    style="font-size:14px; padding:12px 28px;">
-                    <i class="fa-solid fa-file-lines"></i> Create Free Quote
+                    <i class="fa-solid fa-file-circle-check"></i> Proforma Invoice
                 </a>
-                <a href="{{ route('free-docs.builder', 'receipt') }}"
+                <a href="{{ route('free-docs.builder', 'purchase_order') }}"
                    class="fd-btn fd-btn-outline"
                    style="font-size:14px; padding:12px 28px;">
-                    <i class="fa-solid fa-receipt"></i> Create Receipt
+                    <i class="fa-solid fa-cart-flatbed"></i> Purchase Order
+                </a>
+                <a href="{{ route('free-docs.builder', 'delivery_note') }}"
+                   class="fd-btn fd-btn-outline"
+                   style="font-size:14px; padding:12px 28px;">
+                    <i class="fa-solid fa-truck"></i> Delivery Note
                 </a>
             </div>
 

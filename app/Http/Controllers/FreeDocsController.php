@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class FreeDocsController extends Controller
 {
-    private const VALID_TYPES     = ['invoice', 'quote', 'receipt'];
+    private const VALID_TYPES     = ['invoice', 'quote', 'receipt', 'proforma', 'purchase_order', 'delivery_note'];
     private const VALID_TEMPLATES = ['streamline', 'classic', 'minimal', 'bold'];
 
     // ── Landing page ─────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ class FreeDocsController extends Controller
     public function generatePdf(Request $request)
     {
         $data = $request->validate([
-            'type'     => 'required|in:invoice,quote,receipt',
+            'type'     => 'required|in:invoice,quote,receipt,proforma,purchase_order,delivery_note',
             'template' => 'required|in:streamline,classic,minimal,bold',
             'doc'      => 'required|array',
         ]);
@@ -38,7 +38,7 @@ class FreeDocsController extends Controller
         $template = $data['template'];
         $type     = $data['type'];
 
-        $filename = strtoupper($type) . '-' . ($doc['details']['number'] ?? '001') . '.pdf';
+        $filename = strtoupper(str_replace('_', '-', $type)) . '-' . ($doc['details']['number'] ?? '001') . '.pdf';
 
         $pdf = Pdf::loadView("website.free-docs.pdf.{$template}", [
             'doc'  => $doc,
@@ -52,7 +52,7 @@ class FreeDocsController extends Controller
     public function save(Request $request)
     {
         $data = $request->validate([
-            'type'     => 'required|in:invoice,quote,receipt',
+            'type'     => 'required|in:invoice,quote,receipt,proforma,purchase_order,delivery_note',
             'template' => 'required|in:streamline,classic,minimal,bold',
             'doc'      => 'required|array',
         ]);
@@ -106,7 +106,7 @@ class FreeDocsController extends Controller
             $template = 'streamline';
         }
 
-        $filename = strtoupper($type) . '-' . ($docData['details']['number'] ?? '001') . '.pdf';
+        $filename = strtoupper(str_replace('_', '-', $type)) . '-' . ($docData['details']['number'] ?? '001') . '.pdf';
 
         $pdf = Pdf::loadView("website.free-docs.pdf.{$template}", [
             'doc'  => $docData,

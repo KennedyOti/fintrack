@@ -63,7 +63,7 @@ function defaultState(type) {
   const due   = new Date(today); due.setDate(due.getDate() + 14);
   const fmt   = d => d.toISOString().slice(0, 10);
 
-  const prefixes = { invoice: 'INV', quote: 'QT', receipt: 'RCP' };
+  const prefixes = { invoice:'INV', quote:'QT', receipt:'RCP', proforma:'PRO', purchase_order:'PO', delivery_note:'DN' };
   const num = `${prefixes[type] || 'DOC'}-${today.getFullYear()}-001`;
 
   return {
@@ -74,15 +74,20 @@ function defaultState(type) {
     currency:  CURRENCIES[0],
     from: { name:'', email:'', phone:'', address:'', city:'', state:'', zip:'', country:'', logo:'' },
     to:   { company:'', name:'', email:'', phone:'', address:'', city:'', state:'', zip:'', country:'' },
+    ship_to: { company:'', name:'', email:'', phone:'', address:'', city:'', state:'', zip:'', country:'' },
+    authorized_by: '',
     details: {
       number:     num,
       date:       fmt(today),
       due_date:   fmt(due),
       po_number:  '',
       reference:  '',
+      carrier:    '',
+      tracking:   '',
     },
     items: [
-      { description:'Professional Services', qty:1, rate:0, amount:0 }
+      { description: type === 'delivery_note' ? 'Item Description' : 'Professional Services',
+        qty:1, rate:0, amount:0, delivered_qty:1, unit:'pcs' }
     ],
     tax:      { enabled:false, label:'Tax',      rate:0 },
     discount: { enabled:false, type:'percentage', value:0 },
@@ -170,6 +175,21 @@ function bindFormEvents() {
   bindField('docDueDate',  v => state.details.due_date  = v);
   bindField('docPo',       v => state.details.po_number = v);
   bindField('docRef',      v => state.details.reference = v);
+  // Ship To (purchase_order)
+  bindField('shipCompany', v => state.ship_to.company = v);
+  bindField('shipName',    v => state.ship_to.name    = v);
+  bindField('shipEmail',   v => state.ship_to.email   = v);
+  bindField('shipPhone',   v => state.ship_to.phone   = v);
+  bindField('shipAddress', v => state.ship_to.address = v);
+  bindField('shipCity',    v => state.ship_to.city    = v);
+  bindField('shipState',   v => state.ship_to.state   = v);
+  bindField('shipZip',     v => state.ship_to.zip     = v);
+  bindField('shipCountry', v => state.ship_to.country = v);
+  // Authorized By (purchase_order)
+  bindField('docAuthorizedBy', v => { state.authorized_by = v; updatePreview(); });
+  // Carrier / Tracking (delivery_note)
+  bindField('docCarrier',  v => { state.details.carrier  = v; updatePreview(); });
+  bindField('docTracking', v => { state.details.tracking = v; updatePreview(); });
   // Additional
   bindField('docNotes',       v => state.notes        = v);
   bindField('docTerms',       v => state.terms        = v);
@@ -248,7 +268,7 @@ function bindItemEvents() {
 }
 
 function addItem() {
-  state.items.push({ description:'', qty:1, rate:0, amount:0 });
+  state.items.push({ description:'', qty:1, rate:0, amount:0, delivered_qty:1, unit:'pcs' });
   renderItemRows();
   updatePreview();
 }
@@ -264,30 +284,57 @@ function renderItemRows() {
   const tbody = document.getElementById('itemsBody');
   if (!tbody) return;
   tbody.innerHTML = '';
+  const isDN = state.type === 'delivery_note';
+
   state.items.forEach((item, i) => {
     const tr = document.createElement('tr');
     tr.className = 'fd-item-row';
-    tr.innerHTML = `
-      <td style="width:44%">
-        <input class="fd-item-input" data-field="description" data-idx="${i}"
-               value="${esc(item.description)}" placeholder="Item description…">
-      </td>
-      <td style="width:14%">
-        <input class="fd-item-input num" type="number" data-field="qty" data-idx="${i}"
-               value="${item.qty}" min="1" step="0.01">
-      </td>
-      <td style="width:18%">
-        <input class="fd-item-input num" type="number" data-field="rate" data-idx="${i}"
-               value="${item.rate}" min="0" step="0.01" placeholder="0.00">
-      </td>
-      <td style="width:16%">
-        <span class="fd-item-amount">${fmtCurrency(item.amount)}</span>
-      </td>
-      <td style="width:8%">
-        <button class="fd-item-del" data-idx="${i}" title="Remove item">
-          <i class="fa-solid fa-trash-can"></i>
-        </button>
-      </td>`;
+    if (isDN) {
+      tr.innerHTML = `
+        <td style="width:40%">
+          <input class="fd-item-input" data-field="description" data-idx="${i}"
+                 value="${esc(item.description)}" placeholder="Item description…">
+        </td>
+        <td style="width:16%">
+          <input class="fd-item-input num" type="text" inputmode="decimal" data-field="qty" data-idx="${i}"
+                 value="${item.qty}" placeholder="1">
+        </td>
+        <td style="width:16%">
+          <input class="fd-item-input num" type="text" inputmode="decimal" data-field="delivered_qty" data-idx="${i}"
+                 value="${item.delivered_qty ?? item.qty}" placeholder="1">
+        </td>
+        <td style="width:20%">
+          <input class="fd-item-input" data-field="unit" data-idx="${i}"
+                 value="${esc(item.unit ?? 'pcs')}" placeholder="pcs">
+        </td>
+        <td style="width:8%">
+          <button class="fd-item-del" data-idx="${i}" title="Remove item">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </td>`;
+    } else {
+      tr.innerHTML = `
+        <td style="width:44%">
+          <input class="fd-item-input" data-field="description" data-idx="${i}"
+                 value="${esc(item.description)}" placeholder="Item description…">
+        </td>
+        <td style="width:14%">
+          <input class="fd-item-input num" type="text" inputmode="decimal" data-field="qty" data-idx="${i}"
+                 value="${item.qty}" placeholder="1">
+        </td>
+        <td style="width:18%">
+          <input class="fd-item-input num" type="text" inputmode="decimal" data-field="rate" data-idx="${i}"
+                 value="${item.rate}" placeholder="0.00">
+        </td>
+        <td style="width:16%">
+          <span class="fd-item-amount" data-amount-idx="${i}">${fmtCurrency(item.amount)}</span>
+        </td>
+        <td style="width:8%">
+          <button class="fd-item-del" data-idx="${i}" title="Remove item">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </td>`;
+    }
     tbody.appendChild(tr);
   });
 
@@ -296,12 +343,15 @@ function renderItemRows() {
     input.addEventListener('input', e => {
       const idx   = parseInt(e.target.dataset.idx);
       const field = e.target.dataset.field;
-      if (field === 'description') {
-        state.items[idx].description = e.target.value;
-        updatePreview(); // no recalc needed
+      if (field === 'description' || field === 'unit') {
+        state.items[idx][field] = e.target.value;
+        updatePreview();
+      } else if (field === 'delivered_qty') {
+        state.items[idx].delivered_qty = parseFloat(e.target.value) || 0;
+        updatePreview();
       } else {
         state.items[idx][field] = parseFloat(e.target.value) || 0;
-        recalcItems();
+        recalcItemAmounts();
       }
     });
   });
@@ -311,13 +361,25 @@ function renderItemRows() {
   });
 }
 
+// Full recalc + re-render rows (used when adding/removing items or changing currency)
 function recalcItems() {
   state.items.forEach(item => {
     item.amount = (parseFloat(item.qty)||0) * (parseFloat(item.rate)||0);
   });
   renderItemRows();
   renderTotals();
-  renderPreviewOnly(); // render preview WITHOUT looping back into recalcItems
+  renderPreviewOnly();
+}
+
+// Light recalc — only updates amount cells, does NOT re-render inputs (preserves focus)
+function recalcItemAmounts() {
+  state.items.forEach((item, i) => {
+    item.amount = (parseFloat(item.qty)||0) * (parseFloat(item.rate)||0);
+    const amountEl = document.querySelector(`[data-amount-idx="${i}"]`);
+    if (amountEl) amountEl.textContent = fmtCurrency(item.amount);
+  });
+  renderTotals();
+  renderPreviewOnly();
 }
 
 function calcTotals() {
@@ -408,17 +470,55 @@ function addr(obj, sep = '<br>') {
   const parts = [obj.address, [obj.city, obj.state].filter(Boolean).join(', '), obj.zip, obj.country].filter(Boolean);
   return parts.join(sep);
 }
-function typeLabel(type, template) {
-  const m = { invoice:'INVOICE', quote:'QUOTATION', receipt:'RECEIPT' };
+function typeLabel(type) {
+  const m = {
+    invoice:        'INVOICE',
+    quote:          'QUOTATION',
+    receipt:        'RECEIPT',
+    proforma:       'PROFORMA INVOICE',
+    purchase_order: 'PURCHASE ORDER',
+    delivery_note:  'DELIVERY NOTE',
+  };
   return m[type] || type.toUpperCase();
 }
 function dueDateLabel(type) {
-  if (type === 'quote')   return 'Valid Until';
-  if (type === 'receipt') return 'Receipt Date';
+  if (type === 'quote' || type === 'proforma') return 'Valid Until';
+  if (type === 'receipt')        return 'Receipt Date';
+  if (type === 'purchase_order') return 'Expected Delivery';
+  if (type === 'delivery_note')  return 'Delivery Date';
   return 'Due Date';
+}
+function toSectionLabel(type) {
+  if (type === 'quote')          return 'Prepared For';
+  if (type === 'purchase_order') return 'Vendor / Supplier';
+  if (type === 'delivery_note')  return 'Deliver To';
+  return 'Bill To';
+}
+
+function deliveryNoteTableHtml(s, headerBg, headerColor) {
+  const rows = s.items.map(item => `
+    <tr>
+      <td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:13px;">${esc(item.description) || '<em style="color:#aaa">Item description</em>'}</td>
+      <td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:13px;text-align:right;">${item.qty}</td>
+      <td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:13px;text-align:right;">${item.delivered_qty ?? item.qty}</td>
+      <td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:13px;text-align:center;">${esc(item.unit || 'pcs')}</td>
+    </tr>`).join('');
+  return `
+    <table width="100%" cellspacing="0" style="border-collapse:collapse;">
+      <thead>
+        <tr style="background:${headerBg};color:${headerColor};">
+          <th style="padding:10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Description</th>
+          <th style="padding:10px;text-align:right;font-size:11.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Qty Ordered</th>
+          <th style="padding:10px;text-align:right;font-size:11.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Qty Delivered</th>
+          <th style="padding:10px;text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Unit</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
 function itemsTableHtml(s, headerBg, headerColor, accentColor) {
+  if (s.type === 'delivery_note') return deliveryNoteTableHtml(s, headerBg, headerColor);
   const t = calcTotals();
   let rows = s.items.map(item => `
     <tr>
@@ -471,7 +571,18 @@ function footerHtml(s) {
   let out = '';
   if (s.notes) out += `<p style="font-size:12px;color:#444;margin:0 0 8px;"><strong style="color:#222;">Notes:</strong> ${esc(s.notes)}</p>`;
   if (s.terms) out += `<p style="font-size:12px;color:#444;margin:0 0 8px;"><strong style="color:#222;">Terms & Conditions:</strong> ${esc(s.terms)}</p>`;
-  if (s.payment_info) out += `<p style="font-size:12px;color:#444;margin:0;"><strong style="color:#222;">Payment Info:</strong> ${esc(s.payment_info)}</p>`;
+  if (s.payment_info) {
+    const piLabel = s.type === 'delivery_note' ? 'Delivery Instructions' : (s.type === 'purchase_order' ? 'Payment Terms' : 'Payment Info');
+    out += `<p style="font-size:12px;color:#444;margin:0 0 8px;"><strong style="color:#222;">${piLabel}:</strong> ${esc(s.payment_info)}</p>`;
+  }
+  if (s.type === 'purchase_order' && s.authorized_by) {
+    out += `<div style="text-align:right;margin-top:24px;">
+      <div style="display:inline-block;text-align:center;min-width:190px;">
+        <div style="border-top:1px solid #334155;padding-top:6px;margin-top:32px;font-size:12.5px;font-weight:600;">${esc(s.authorized_by)}</div>
+        <div style="font-size:10.5px;color:#888;margin-top:2px;">Authorized Signature</div>
+      </div>
+    </div>`;
+  }
   return out;
 }
 
@@ -513,15 +624,21 @@ function renderStreamline(s) {
       </div>
 
       <!-- Meta bar -->
-      <div style="background:#f8f9fa;border-radius:8px;padding:14px 18px;margin-bottom:24px;display:flex;gap:0;">
+      <div style="background:#f8f9fa;border-radius:8px;padding:14px 18px;margin-bottom:24px;">
         <table width="100%" cellspacing="0"><tr>
           <td style="vertical-align:top;padding-right:20px;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px;">Bill To</div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px;">${toSectionLabel(s.type)}</div>
             <div style="font-size:13px;font-weight:700;color:#1a1a2e;">${esc(s.to.company)||esc(s.to.name)||'—'}</div>
             ${s.to.company && s.to.name ? `<div style="font-size:12px;color:#555;">${esc(s.to.name)}</div>` : ''}
             <div style="font-size:12px;color:#555;">${addr(s.to, ', ')}</div>
             ${s.to.email ? `<div style="font-size:12px;color:#555;">${esc(s.to.email)}</div>` : ''}
           </td>
+          ${s.type === 'purchase_order' && (s.ship_to?.company || s.ship_to?.name || s.ship_to?.address) ? `
+          <td style="vertical-align:top;padding:0 20px;border-left:1px solid #e5e7eb;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px;">Ship To</div>
+            <div style="font-size:13px;font-weight:700;color:#1a1a2e;">${esc(s.ship_to.company)||esc(s.ship_to.name)||'—'}</div>
+            <div style="font-size:12px;color:#555;">${addr(s.ship_to, ', ')}</div>
+          </td>` : ''}
           <td style="vertical-align:top;padding:0 20px;border-left:1px solid #e5e7eb;">
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px;">Issue Date</div>
             <div style="font-size:13px;font-weight:600;">${fmtDate(s.details.date)||'—'}</div>
@@ -531,8 +648,12 @@ function renderStreamline(s) {
             <div style="font-size:13px;font-weight:600;color:${s.type==='invoice'?'#dc2626':'#1a1a2e'};">${fmtDate(s.details.due_date)||'—'}</div>
           </td>
           ${s.details.po_number ? `<td style="vertical-align:top;padding-left:20px;border-left:1px solid #e5e7eb;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px;">PO Number</div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px;">${s.type === 'delivery_note' ? 'Order Ref' : 'PO Number'}</div>
             <div style="font-size:13px;font-weight:600;">${esc(s.details.po_number)}</div>
+          </td>` : ''}
+          ${s.type === 'delivery_note' && s.details.carrier ? `<td style="vertical-align:top;padding-left:20px;border-left:1px solid #e5e7eb;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px;">Carrier</div>
+            <div style="font-size:13px;font-weight:600;">${esc(s.details.carrier)}</div>
           </td>` : ''}
         </tr></table>
       </div>
@@ -589,13 +710,19 @@ function renderClassic(s) {
               ${s.from.address ? addr(s.from) : '<em style="color:#aaa">Your address</em>'}
             </div>
           </td>
-          <td style="vertical-align:top;width:35%;padding-left:20px;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:${p};margin-bottom:6px;">Bill To</div>
+          <td style="vertical-align:top;width:${s.type === 'purchase_order' ? '25%' : '35%'};padding-left:20px;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:${p};margin-bottom:6px;">${toSectionLabel(s.type)}</div>
             <div style="font-size:13px;font-weight:700;">${esc(s.to.company)||esc(s.to.name)||'—'}</div>
             ${s.to.company && s.to.name ? `<div style="font-size:12.5px;">${esc(s.to.name)}</div>` : ''}
             <div style="font-size:12.5px;color:#444;line-height:1.6;">${addr(s.to)}</div>
             ${s.to.email ? `<div style="font-size:12px;color:#555;">${esc(s.to.email)}</div>` : ''}
           </td>
+          ${s.type === 'purchase_order' && (s.ship_to?.company || s.ship_to?.name || s.ship_to?.address) ? `
+          <td style="vertical-align:top;width:25%;padding-left:20px;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:${p};margin-bottom:6px;">Ship To</div>
+            <div style="font-size:13px;font-weight:700;">${esc(s.ship_to.company)||esc(s.ship_to.name)||'—'}</div>
+            <div style="font-size:12.5px;color:#444;line-height:1.6;">${addr(s.ship_to)}</div>
+          </td>` : ''}
           <td style="vertical-align:top;width:25%;text-align:right;">
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:${p};margin-bottom:8px;">Details</div>
             <table style="margin-left:auto;font-size:12px;color:#444;"><tbody>
@@ -652,11 +779,15 @@ function renderMinimal(s) {
     <!-- Recipient + dates -->
     <table width="100%" cellspacing="0" style="margin-bottom:30px;"><tr>
       <td style="vertical-align:top;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:6px;">Billed To</div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:6px;">${toSectionLabel(s.type)}</div>
         <div style="font-size:14px;font-weight:700;">${esc(s.to.company)||esc(s.to.name)||'—'}</div>
         ${s.to.company && s.to.name ? `<div style="font-size:12.5px;color:#555;">${esc(s.to.name)}</div>` : ''}
         <div style="font-size:12px;color:#64748b;">${addr(s.to)}</div>
         ${s.to.email?`<div style="font-size:12px;color:#64748b;">${esc(s.to.email)}</div>`:''}
+        ${s.type === 'purchase_order' && (s.ship_to?.company || s.ship_to?.name || s.ship_to?.address) ? `
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-top:12px;margin-bottom:6px;">Ship To</div>
+          <div style="font-size:13px;font-weight:700;">${esc(s.ship_to.company)||esc(s.ship_to.name)||'—'}</div>
+          <div style="font-size:12px;color:#64748b;">${addr(s.ship_to)}</div>` : ''}
       </td>
       <td style="text-align:right;vertical-align:top;">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;margin-bottom:6px;">Date Issued</div>
@@ -704,7 +835,7 @@ function renderBold(s) {
           <div style="background:rgba(255,255,255,.12);display:inline-block;padding:8px 20px;border-radius:8px;margin-bottom:10px;">
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.7);">${title}</div>
           </div>
-          <div style="font-size:32px;font-weight:900;color:${a};line-height:1;">${fmtCurrency(t.total)}</div>
+          ${s.type !== 'delivery_note' ? `<div style="font-size:32px;font-weight:900;color:${a};line-height:1;">${fmtCurrency(t.total)}</div>` : ''}
           <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:6px;">
             # ${esc(s.details.number)||'—'} &nbsp;&bull;&nbsp; ${fmtDate(s.details.date)||'—'}
           </div>
@@ -716,10 +847,14 @@ function renderBold(s) {
     <div style="background:#f8fafc;border-bottom:1px solid #e2e8f0;padding:16px 36px;">
       <table width="100%" cellspacing="0"><tr>
         <td style="vertical-align:top;width:50%;">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8;margin-bottom:5px;">Bill To</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8;margin-bottom:5px;">${toSectionLabel(s.type)}</div>
           <div style="font-size:13.5px;font-weight:700;">${esc(s.to.company)||esc(s.to.name)||'—'}</div>
           ${s.to.company && s.to.name ? `<div style="font-size:12px;color:#555;">${esc(s.to.name)}</div>` : ''}
           <div style="font-size:12px;color:#64748b;">${addr(s.to,', ')}</div>
+          ${s.type === 'purchase_order' && (s.ship_to?.company || s.ship_to?.name || s.ship_to?.address) ? `
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8;margin-top:10px;margin-bottom:5px;">Ship To</div>
+            <div style="font-size:13px;font-weight:700;">${esc(s.ship_to.company)||esc(s.ship_to.name)||'—'}</div>
+            <div style="font-size:12px;color:#64748b;">${addr(s.ship_to,', ')}</div>` : ''}
         </td>
         <td style="vertical-align:top;text-align:right;">
           <table style="margin-left:auto;font-size:12px;"><tbody>
@@ -758,32 +893,40 @@ function fontCss(font) {
 /* ── PDF generation ─────────────────────────────────────────── */
 function downloadPdf() {
   const btn = document.getElementById('btnDownloadPdf');
-  if (btn) { btn.innerHTML = '<i class="fa-solid fa-spinner"></i> Generating…'; btn.disabled = true; }
+  if (btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating…'; btn.disabled = true; }
 
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = window.FD_PDF_URL;
+  const filename = state.type.toUpperCase() + '-' + (state.details.number || '001') + '.pdf';
 
-  addHidden(form, '_token', window.FD_CSRF);
-  addHidden(form, 'type',     state.type);
-  addHidden(form, 'template', state.template);
-  addHidden(form, 'doc',      JSON.stringify(state));
-
-  document.body.appendChild(form);
-  form.submit();
-  document.body.removeChild(form);
-
-  setTimeout(() => {
+  fetch(window.FD_PDF_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': window.FD_CSRF,
+      'Accept': 'application/pdf',
+    },
+    body: JSON.stringify({ type: state.type, template: state.template, doc: state }),
+  })
+  .then(r => {
+    if (!r.ok) return r.text().then(t => { throw new Error(t || 'PDF generation failed'); });
+    return r.blob();
+  })
+  .then(blob => {
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  })
+  .catch(err => {
+    console.error(err);
+    showToast('PDF generation failed. Please try again.', 'error');
+  })
+  .finally(() => {
     if (btn) { btn.innerHTML = '<i class="fa-solid fa-download"></i> Download PDF'; btn.disabled = false; }
-  }, 3000);
-}
-
-function addHidden(form, name, value) {
-  const inp = document.createElement('input');
-  inp.type  = 'hidden';
-  inp.name  = name;
-  inp.value = value;
-  form.appendChild(inp);
+  });
 }
 
 /* ── Share link ─────────────────────────────────────────────── */

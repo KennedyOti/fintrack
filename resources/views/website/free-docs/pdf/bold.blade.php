@@ -97,9 +97,33 @@ table { border-collapse: collapse; width: 100%; }
         if (!$d) return '—';
         try { return (new DateTime($d))->format('d M Y'); } catch(\Exception $e) { return $d; }
     }
-    $docLabels = ['invoice'=>'INVOICE','quote'=>'QUOTATION','receipt'=>'RECEIPT'];
+    $shipTo       = $doc['ship_to']      ?? [];
+    $authorizedBy = $doc['authorized_by'] ?? '';
+    $carrier      = $doc['details']['carrier']  ?? '';
+    $tracking     = $doc['details']['tracking'] ?? '';
+
+    $docLabels = [
+        'invoice'        => 'INVOICE',
+        'quote'          => 'QUOTATION',
+        'receipt'        => 'RECEIPT',
+        'proforma'       => 'PROFORMA INVOICE',
+        'purchase_order' => 'PURCHASE ORDER',
+        'delivery_note'  => 'DELIVERY NOTE',
+    ];
     $title = $docLabels[$type ?? 'invoice'] ?? 'DOCUMENT';
-    $dueLbl = ($type==='quote') ? 'Valid Until' : (($type==='receipt') ? 'Receipt Date' : 'Due Date');
+    $dueLbl = match($type ?? 'invoice') {
+        'quote', 'proforma' => 'Valid Until',
+        'receipt'           => 'Receipt Date',
+        'purchase_order'    => 'Expected Delivery',
+        'delivery_note'     => 'Delivery Date',
+        default             => 'Due Date',
+    };
+    $toLbl = match($type ?? 'invoice') {
+        'quote'          => 'Prepared For',
+        'purchase_order' => 'Vendor / Supplier',
+        'delivery_note'  => 'Deliver To',
+        default          => 'Bill To',
+    };
     function addr4($obj) {
         $parts = array_filter([
             $obj['address'] ?? '',
@@ -129,7 +153,9 @@ table { border-collapse: collapse; width: 100%; }
             </td>
             <td style="text-align:right;vertical-align:middle;">
                 <div class="doc-type-badge">{{ $title }}</div>
+                @if($type !== 'delivery_note')
                 <div class="hero-amount">{{ fmtPdf4($total, $currency) }}</div>
+                @endif
                 <div class="hero-meta">
                     # {{ $details['number'] ?? '001' }} &nbsp;·&nbsp; {{ fmtDate4($details['date'] ?? '') }}
                 </div>
@@ -142,8 +168,8 @@ table { border-collapse: collapse; width: 100%; }
 <div class="info-strip">
     <table>
         <tr>
-            <td style="vertical-align:top;width:55%;">
-                <div class="section-label">{{ $type === 'quote' ? 'Prepared For' : 'Bill To' }}</div>
+            <td style="vertical-align:top;width:{{ $type === 'purchase_order' ? '38%' : '55%' }};">
+                <div class="section-label">{{ $toLbl }}</div>
                 <div style="font-size:13.5px;font-weight:700;">{{ $to['company'] ?? ($to['name'] ?? '—') }}</div>
                 @if(!empty($to['company']) && !empty($to['name']))
                 <div style="font-size:12px;color:#555;">{{ $to['name'] }}</div>
@@ -151,6 +177,13 @@ table { border-collapse: collapse; width: 100%; }
                 <div style="font-size:12px;color:#64748b;">{{ addr4($to) }}</div>
                 @if(!empty($to['email']))<div style="font-size:12px;color:#64748b;">{{ $to['email'] }}</div>@endif
             </td>
+            @if($type === 'purchase_order' && (!empty($shipTo['company']) || !empty($shipTo['name']) || !empty($shipTo['address'])))
+            <td style="vertical-align:top;width:22%;padding-left:16px;">
+                <div class="section-label">Ship To</div>
+                <div style="font-size:13px;font-weight:700;">{{ $shipTo['company'] ?? ($shipTo['name'] ?? '—') }}</div>
+                <div style="font-size:12px;color:#64748b;">{{ addr4($shipTo) }}</div>
+            </td>
+            @endif
             <td style="vertical-align:top;text-align:right;">
                 <table style="margin-left:auto;font-size:12px;">
                     <tr>
@@ -177,6 +210,31 @@ table { border-collapse: collapse; width: 100%; }
 
 <!-- Items -->
 <div class="page" style="padding-top:0;">
+    @if($type === 'delivery_note')
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width:46%;">Description</th>
+                <th class="right" style="width:18%;">Qty Ordered</th>
+                <th class="right" style="width:18%;">Qty Delivered</th>
+                <th style="text-align:center;width:18%;">Unit</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($items as $item)
+            <tr>
+                <td>{{ $item['description'] ?? '' }}</td>
+                <td class="right">{{ $item['qty'] ?? 1 }}</td>
+                <td class="right">{{ $item['delivered_qty'] ?? ($item['qty'] ?? 1) }}</td>
+                <td style="text-align:center;">{{ $item['unit'] ?? 'pcs' }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @if(!empty($tracking))
+    <div style="font-size:11.5px;color:#555;margin-top:10px;"><strong>Tracking Number:</strong> {{ $tracking }}</div>
+    @endif
+    @else
     <table class="items-table">
         <thead>
             <tr>
@@ -235,12 +293,25 @@ table { border-collapse: collapse; width: 100%; }
             @endif
         </tfoot>
     </table>
+    @endif
 
     @if($notes || $terms || $payInfo)
     <div class="footer-area" style="margin-top:20px;">
         @if($notes)<p class="footer-text"><span class="footer-label">Notes: </span>{{ $notes }}</p>@endif
         @if($terms)<p class="footer-text"><span class="footer-label">Terms & Conditions: </span>{{ $terms }}</p>@endif
-        @if($payInfo)<p class="footer-text"><span class="footer-label">Payment Info: </span>{{ $payInfo }}</p>@endif
+        @if($payInfo)
+        @php $piLabel4 = $type==='delivery_note' ? 'Delivery Instructions' : ($type==='purchase_order' ? 'Payment Terms' : 'Payment Info'); @endphp
+        <p class="footer-text"><span class="footer-label">{{ $piLabel4 }}: </span>{{ $payInfo }}</p>
+        @endif
+    </div>
+    @endif
+
+    @if($type === 'purchase_order' && !empty($authorizedBy))
+    <div style="text-align:right;margin-top:24px;">
+        <div style="display:inline-block;text-align:center;min-width:190px;">
+            <div style="border-top:1px solid #fff;padding-top:6px;margin-top:32px;font-size:12.5px;font-weight:600;color:#1a1a2e;">{{ $authorizedBy }}</div>
+            <div style="font-size:10.5px;color:#888;margin-top:2px;">Authorized Signature</div>
+        </div>
     </div>
     @endif
 

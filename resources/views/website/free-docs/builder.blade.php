@@ -10,16 +10,28 @@
     {{-- Document type switcher --}}
     <div class="fd-type-tabs">
         <a href="{{ route('free-docs.builder', 'invoice') }}"
-           class="fd-type-tab {{ $type === 'invoice'  ? 'active' : '' }}">
+           class="fd-type-tab {{ $type === 'invoice'        ? 'active' : '' }}">
             <i class="fa-solid fa-file-invoice-dollar"></i> Invoice
         </a>
         <a href="{{ route('free-docs.builder', 'quote') }}"
-           class="fd-type-tab {{ $type === 'quote'    ? 'active' : '' }}">
+           class="fd-type-tab {{ $type === 'quote'          ? 'active' : '' }}">
             <i class="fa-solid fa-file-lines"></i> Quote
         </a>
         <a href="{{ route('free-docs.builder', 'receipt') }}"
-           class="fd-type-tab {{ $type === 'receipt'  ? 'active' : '' }}">
+           class="fd-type-tab {{ $type === 'receipt'        ? 'active' : '' }}">
             <i class="fa-solid fa-receipt"></i> Receipt
+        </a>
+        <a href="{{ route('free-docs.builder', 'proforma') }}"
+           class="fd-type-tab {{ $type === 'proforma'       ? 'active' : '' }}">
+            <i class="fa-solid fa-file-circle-check"></i> Proforma
+        </a>
+        <a href="{{ route('free-docs.builder', 'purchase_order') }}"
+           class="fd-type-tab {{ $type === 'purchase_order' ? 'active' : '' }}">
+            <i class="fa-solid fa-cart-flatbed"></i> Purchase Order
+        </a>
+        <a href="{{ route('free-docs.builder', 'delivery_note') }}"
+           class="fd-type-tab {{ $type === 'delivery_note'  ? 'active' : '' }}">
+            <i class="fa-solid fa-truck"></i> Delivery Note
         </a>
     </div>
 
@@ -178,20 +190,32 @@
             </div>
         </div>
 
-        {{-- ── 2 · Bill To ── --}}
+        {{-- ── 2 · Bill To / Vendor / Deliver To ── --}}
+        @php
+            $toLabel = match($type) {
+                'quote'          => 'Prepared For',
+                'purchase_order' => 'Vendor / Supplier',
+                'delivery_note'  => 'Deliver To',
+                default          => 'Bill To',
+            };
+            $toIcon = match($type) {
+                'purchase_order' => 'fa-store',
+                'delivery_note'  => 'fa-location-dot',
+                default          => 'fa-user-tie',
+            };
+            $toCompanyLabel = $type === 'purchase_order' ? 'Vendor / Supplier Name' : 'Company / Organisation';
+        @endphp
         <div class="fd-section">
             <div class="fd-section-head">
-                <div class="fd-section-icon blue"><i class="fa-solid fa-user-tie"></i></div>
-                <span class="fd-section-title">
-                    {{ $type === 'quote' ? 'Prepared For' : 'Bill To' }}
-                </span>
+                <div class="fd-section-icon blue"><i class="fa-solid {{ $toIcon }}"></i></div>
+                <span class="fd-section-title">{{ $toLabel }}</span>
                 <i class="fa-solid fa-chevron-down fd-section-toggle"></i>
             </div>
             <div class="fd-section-body">
                 <div class="fd-row cols-2">
                     <div class="fd-field">
-                        <label class="fd-label" for="toCompany">Company / Organisation</label>
-                        <input id="toCompany" class="fd-input" placeholder="Client Corp.">
+                        <label class="fd-label" for="toCompany">{{ $toCompanyLabel }}</label>
+                        <input id="toCompany" class="fd-input" placeholder="{{ $type === 'purchase_order' ? 'Supplier Ltd.' : 'Client Corp.' }}">
                     </div>
                     <div class="fd-field">
                         <label class="fd-label" for="toName">Contact Name</label>
@@ -237,6 +261,55 @@
             </div>
         </div>
 
+        {{-- ── 2b · Ship To (purchase_order only) ── --}}
+        @if($type === 'purchase_order')
+        <div class="fd-section">
+            <div class="fd-section-head">
+                <div class="fd-section-icon green"><i class="fa-solid fa-truck-fast"></i></div>
+                <span class="fd-section-title">Ship To <span class="fd-optional" style="font-weight:400;">(optional)</span></span>
+                <i class="fa-solid fa-chevron-down fd-section-toggle"></i>
+            </div>
+            <div class="fd-section-body">
+                <div class="fd-row cols-2">
+                    <div class="fd-field">
+                        <label class="fd-label" for="shipCompany">Company / Organisation</label>
+                        <input id="shipCompany" class="fd-input" placeholder="Receiving Corp.">
+                    </div>
+                    <div class="fd-field">
+                        <label class="fd-label" for="shipName">Contact Name</label>
+                        <input id="shipName" class="fd-input" placeholder="Warehouse Manager">
+                    </div>
+                </div>
+                <div class="fd-row cols-1">
+                    <div class="fd-field">
+                        <label class="fd-label" for="shipAddress">Street Address</label>
+                        <input id="shipAddress" class="fd-input" placeholder="Warehouse / Delivery Address">
+                    </div>
+                </div>
+                <div class="fd-row cols-3">
+                    <div class="fd-field">
+                        <label class="fd-label" for="shipCity">City</label>
+                        <input id="shipCity" class="fd-input" placeholder="Nairobi">
+                    </div>
+                    <div class="fd-field">
+                        <label class="fd-label" for="shipState">State / Region</label>
+                        <input id="shipState" class="fd-input" placeholder="Nairobi County">
+                    </div>
+                    <div class="fd-field">
+                        <label class="fd-label" for="shipZip">Postal Code</label>
+                        <input id="shipZip" class="fd-input" placeholder="00100">
+                    </div>
+                </div>
+                <div class="fd-row cols-1">
+                    <div class="fd-field">
+                        <label class="fd-label" for="shipCountry">Country</label>
+                        <input id="shipCountry" class="fd-input" placeholder="Kenya">
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         {{-- ── 3 · Document Details ── --}}
         <div class="fd-section">
             <div class="fd-section-head">
@@ -244,14 +317,39 @@
                 <span class="fd-section-title">Document Details</span>
                 <i class="fa-solid fa-chevron-down fd-section-toggle"></i>
             </div>
+            @php
+                $numLabel = match($type) {
+                    'invoice'        => 'Invoice Number',
+                    'quote'          => 'Quote Number',
+                    'receipt'        => 'Receipt Number',
+                    'proforma'       => 'Proforma Number',
+                    'purchase_order' => 'PO Number',
+                    'delivery_note'  => 'Delivery Note No.',
+                    default          => 'Document Number',
+                };
+                $numPrefix = match($type) {
+                    'invoice'        => 'INV-',
+                    'quote'          => 'QT-',
+                    'receipt'        => 'RCP-',
+                    'proforma'       => 'PRO-',
+                    'purchase_order' => 'PO-',
+                    'delivery_note'  => 'DN-',
+                    default          => 'DOC-',
+                };
+                $dueDateLabel = match($type) {
+                    'quote', 'proforma' => 'Valid Until',
+                    'receipt'           => 'Receipt Date',
+                    'purchase_order'    => 'Expected Delivery',
+                    'delivery_note'     => 'Delivery Date',
+                    default             => 'Due Date',
+                };
+                $poLabel = $type === 'delivery_note' ? 'Order Reference' : 'PO Number';
+            @endphp
             <div class="fd-section-body">
                 <div class="fd-row cols-2">
                     <div class="fd-field">
-                        <label class="fd-label" for="docNumber">
-                            {{ $type === 'invoice' ? 'Invoice Number' : ($type === 'quote' ? 'Quote Number' : 'Receipt Number') }}
-                        </label>
-                        <input id="docNumber" class="fd-input"
-                               value="{{ $type === 'invoice' ? 'INV-' : ($type === 'quote' ? 'QT-' : 'RCP-') }}{{ date('Y') }}-001">
+                        <label class="fd-label" for="docNumber">{{ $numLabel }}</label>
+                        <input id="docNumber" class="fd-input" value="{{ $numPrefix }}{{ date('Y') }}-001">
                     </div>
                     <div class="fd-field">
                         <label class="fd-label" for="docDate">Issue Date</label>
@@ -260,23 +358,46 @@
                 </div>
                 <div class="fd-row cols-2">
                     <div class="fd-field">
-                        <label class="fd-label" for="docDueDate">
-                            {{ $type === 'quote' ? 'Valid Until' : ($type === 'receipt' ? 'Receipt Date' : 'Due Date') }}
-                        </label>
+                        <label class="fd-label" for="docDueDate">{{ $dueDateLabel }}</label>
                         <input id="docDueDate" class="fd-input" type="date"
                                value="{{ date('Y-m-d', strtotime('+14 days')) }}">
                     </div>
                     <div class="fd-field">
-                        <label class="fd-label" for="docPo">PO Number <span class="fd-optional">(optional)</span></label>
-                        <input id="docPo" class="fd-input" placeholder="PO-12345">
+                        <label class="fd-label" for="docPo">{{ $poLabel }} <span class="fd-optional">(optional)</span></label>
+                        <input id="docPo" class="fd-input" placeholder="{{ $type === 'delivery_note' ? 'REF-12345' : 'PO-12345' }}">
                     </div>
                 </div>
+                @if($type === 'delivery_note')
+                <div class="fd-row cols-2">
+                    <div class="fd-field">
+                        <label class="fd-label" for="docCarrier">Carrier / Courier <span class="fd-optional">(optional)</span></label>
+                        <input id="docCarrier" class="fd-input" placeholder="DHL, FedEx, Own Fleet…">
+                    </div>
+                    <div class="fd-field">
+                        <label class="fd-label" for="docTracking">Tracking Number <span class="fd-optional">(optional)</span></label>
+                        <input id="docTracking" class="fd-input" placeholder="1Z9999999999999999">
+                    </div>
+                </div>
+                @endif
+                @if($type === 'purchase_order')
+                <div class="fd-row cols-2">
+                    <div class="fd-field">
+                        <label class="fd-label" for="docRef">Reference / Project <span class="fd-optional">(optional)</span></label>
+                        <input id="docRef" class="fd-input" placeholder="Office Supplies Q2">
+                    </div>
+                    <div class="fd-field">
+                        <label class="fd-label" for="docAuthorizedBy">Authorized By <span class="fd-optional">(optional)</span></label>
+                        <input id="docAuthorizedBy" class="fd-input" placeholder="Jane Doe, Director">
+                    </div>
+                </div>
+                @else
                 <div class="fd-row cols-1">
                     <div class="fd-field">
                         <label class="fd-label" for="docRef">Reference / Project <span class="fd-optional">(optional)</span></label>
                         <input id="docRef" class="fd-input" placeholder="Website Redesign Project">
                     </div>
                 </div>
+                @endif
             </div>
         </div>
 
@@ -290,6 +411,15 @@
             <div class="fd-section-body">
                 <table class="fd-items-table">
                     <thead>
+                        @if($type === 'delivery_note')
+                        <tr>
+                            <th style="width:40%;">Description</th>
+                            <th style="width:16%;text-align:right;">Qty Ordered</th>
+                            <th style="width:16%;text-align:right;">Qty Delivered</th>
+                            <th style="width:20%;text-align:center;">Unit</th>
+                            <th style="width:8%;"></th>
+                        </tr>
+                        @else
                         <tr>
                             <th style="width:44%;">Description</th>
                             <th style="width:14%;text-align:right;">Qty</th>
@@ -297,6 +427,7 @@
                             <th style="width:16%;text-align:right;">Amount</th>
                             <th style="width:8%;"></th>
                         </tr>
+                        @endif
                     </thead>
                     <tbody id="itemsBody">
                         {{-- Rendered by JS --}}
@@ -308,7 +439,8 @@
             </div>
         </div>
 
-        {{-- ── 5 · Totals & Adjustments ── --}}
+        {{-- ── 5 · Totals & Adjustments (hidden for delivery note) ── --}}
+        @if($type !== 'delivery_note')
         <div class="fd-section">
             <div class="fd-section-head">
                 <div class="fd-section-icon amber"><i class="fa-solid fa-percent"></i></div>
@@ -421,6 +553,8 @@
             </div>
         </div>
 
+        @endif {{-- /delivery_note totals guard --}}
+
         {{-- ── 6 · Notes, Terms & Payment ── --}}
         <div class="fd-section">
             <div class="fd-section-head">
@@ -445,9 +579,19 @@
                 </div>
                 <div class="fd-row cols-1">
                     <div class="fd-field">
+                        @if($type === 'delivery_note')
+                        <label class="fd-label" for="docPaymentInfo">Delivery Instructions</label>
+                        <textarea id="docPaymentInfo" class="fd-textarea"
+                            placeholder="Leave at reception. Handle with care. Keep dry."></textarea>
+                        @elseif($type === 'purchase_order')
+                        <label class="fd-label" for="docPaymentInfo">Payment Terms</label>
+                        <textarea id="docPaymentInfo" class="fd-textarea"
+                            placeholder="Net 30 days from invoice date. Payment via bank transfer."></textarea>
+                        @else
                         <label class="fd-label" for="docPaymentInfo">Payment Instructions / Bank Details</label>
                         <textarea id="docPaymentInfo" class="fd-textarea"
                             placeholder="Bank: First National Bank&#10;Account Name: Acme Ltd&#10;Account No: 1234567890"></textarea>
+                        @endif
                     </div>
                 </div>
             </div>
