@@ -7,6 +7,18 @@
 {{-- ── Toolbar ──────────────────────────────────────────────────── --}}
 <div class="fd-toolbar">
 
+    {{-- Action buttons — left-most for instant access --}}
+    <div class="fd-action-group">
+        <button id="btnShareLink" class="fd-btn fd-btn-secondary" type="button">
+            <i class="fa-solid fa-link"></i> Get Link
+        </button>
+        <button id="btnDownloadPdf" class="fd-btn fd-btn-primary" type="button">
+            <i class="fa-solid fa-download"></i> Download PDF
+        </button>
+    </div>
+
+    <div class="fd-toolbar-sep"></div>
+
     {{-- Document type switcher --}}
     <div class="fd-type-tabs">
         <a href="{{ route('free-docs.builder', 'invoice') }}"
@@ -86,17 +98,6 @@
         </div>
     </div>
 
-    <div class="fd-toolbar-sep"></div>
-
-    {{-- Action buttons --}}
-    <div class="fd-action-group">
-        <button id="btnShareLink" class="fd-btn fd-btn-secondary" type="button">
-            <i class="fa-solid fa-link"></i> Get Link
-        </button>
-        <button id="btnDownloadPdf" class="fd-btn fd-btn-primary" type="button">
-            <i class="fa-solid fa-download"></i> Download PDF
-        </button>
-    </div>
 
 </div>
 
@@ -620,6 +621,16 @@
 
 </div>{{-- /fd-body --}}
 
+{{-- ── Sticky Bottom Action Bar (visible on tablet/laptop, hidden on desktop) ── --}}
+<div class="fd-sticky-actions" id="fdStickyActions">
+    <button id="btnShareLink2" class="fd-btn fd-btn-secondary fd-sticky-btn" type="button">
+        <i class="fa-solid fa-link"></i> Get Link
+    </button>
+    <button id="btnDownloadPdf2" class="fd-btn fd-btn-primary fd-sticky-btn" type="button">
+        <i class="fa-solid fa-download"></i> Download PDF
+    </button>
+</div>
+
 {{-- ── Share Link Modal ─────────────────────────────────────────── --}}
 <div class="fd-modal-overlay" id="shareModal" onclick="if(event.target===this)closeModal()">
     <div class="fd-modal">
@@ -671,6 +682,12 @@ document.addEventListener('DOMContentLoaded', () => {
             logoRemove.style.display = 'none';
         });
     }
+
+    // Forward sticky bar button clicks to the original toolbar buttons
+    const stickyShare   = document.getElementById('btnShareLink2');
+    const stickyDownload = document.getElementById('btnDownloadPdf2');
+    if (stickyShare)    stickyShare.addEventListener('click', () => document.getElementById('btnShareLink').click());
+    if (stickyDownload) stickyDownload.addEventListener('click', () => document.getElementById('btnDownloadPdf').click());
 });
 </script>
 @endpush

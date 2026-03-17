@@ -191,7 +191,23 @@
 }
 
 /* Action buttons */
-.fd-action-group { display: flex; gap: 6px; flex-shrink: 0; margin-left: auto; }
+.fd-action-group { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* ── Sticky bottom action bar (tablet / laptop) ─────────────── */
+.fd-sticky-actions {
+  display: none; /* hidden on desktop — toolbar buttons are visible */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: var(--fd-surface);
+  border-top: 1px solid var(--fd-border);
+  padding: 10px 16px;
+  gap: 10px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.35);
+}
+.fd-sticky-btn { flex: 1; justify-content: center; font-size: 13.5px; padding: 9px 16px; }
 
 /* ── Buttons (fd-btn) ───────────────────────────────────────── */
 .fd-btn {
@@ -671,8 +687,10 @@
   .fd-mobile-tabs { display: flex; }
   .fd-toolbar { height: auto; min-height: var(--fd-toolbar-h); flex-wrap: wrap; padding: 8px 12px; gap: 6px; }
   .fd-toolbar-sep { display: none; }
-  .fd-action-group { margin-left: 0; width: 100%; }
-  .fd-action-group .fd-btn { flex: 1; justify-content: center; }
+  .fd-action-group { display: none; } /* hidden — sticky bar takes over */
+  .fd-sticky-actions { display: flex; }
+  /* add bottom padding so form content isn't hidden behind sticky bar */
+  .fd-form-panel { padding-bottom: 70px; }
 }
 @media (max-width: 768px) {
   .fd-doc-cards { grid-template-columns: 1fr; max-width: 380px; }
